@@ -6,7 +6,7 @@
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="/home">Domů</a>
+    <a class="navbar-brand" href="/home">Hodinky</a>
     <div class="collapse navbar-collapse">
         <ul class="navbar-nav ml-auto">
             <li class="nav-item">
@@ -15,38 +15,42 @@
         </ul>
     </div>
 </nav>
+
 <div class="container">
     <h1 class="mt-4">Váš košík</h1>
-
-    <div th:if="${session.loggedInUser == null}">
-        <div class="alert alert-warning">
-            <p>Nejste přihlášeni. Prosím <a th:href="@{/login}">přihlaste se</a> nebo <a th:href="@{/register}">registrovat</a>.</p>
-        </div>
+    <div th:if="${cart.isEmpty()}">
+        <p>Váš košík je prázdný.</p>
     </div>
-
-    <div th:if="${session.loggedInUser != null}">
-        <table class="table">
+    <div th:unless="${cart.isEmpty()}">
+        <table class="table table-striped">
             <thead>
             <tr>
                 <th>Název</th>
-                <th>Cena</th>
-                <th>Množství</th>
+                <th>Cena za kus</th>
+                <th>Počet kusů</th>
+                <th>Celkem</th>
                 <th>Akce</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="entry : ${items}">
-                <td th:text="${entry.key.name}">Název hodinek</td>
-                <td th:text="${entry.key.price}">0.00</td>
-                <td th:text="${entry.value}">1</td>
+            <tr th:each="entry : ${cart}">
+                <td th:text="${watchDetails[entry.key].name}">Název hodinek</td>
+                <td th:text="${watchDetails[entry.key].price}">0.00</td>
                 <td>
-                    <a th:href="@{/cart/remove/{id}(id=${entry.key.id})}" class="btn btn-danger btn-sm">Odebrat</a>
+                    <div class="d-flex align-items-center">
+                        <a th:href="@{/cart/remove/{id}(id=${entry.key})}" class="btn btn-sm btn-secondary">-</a>
+                        <span class="mx-2" th:text="${entry.value}">1</span>
+                        <a th:href="@{/cart/add/{id}(id=${entry.key})}" class="btn btn-sm btn-secondary">+</a>
+                    </div>
+                </td>
+                <td th:text="${watchDetails[entry.key].price * entry.value}">0.00</td>
+                <td>
+                    <a th:href="@{/cart/delete/{id}(id=${entry.key})}" class="btn btn-sm btn-danger">Odstranit</a>
                 </td>
             </tr>
             </tbody>
         </table>
-        <h3>Celková cena: Kč <span th:text="${totalPrice}">0.00</span></h3>
-        <a th:href="@{/order/create}" class="btn btn-success">Vytvořit objednávku</a>
+        <a href="/home" class="btn btn-secondary mt-3">Pokračovat v nakupování</a>
     </div>
 </div>
 </body>

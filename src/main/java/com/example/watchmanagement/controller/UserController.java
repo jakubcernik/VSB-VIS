@@ -2,6 +2,7 @@ package com.example.watchmanagement.controller;
 
 import com.example.watchmanagement.model.User;
 import com.example.watchmanagement.repository.UserRepository;
+import com.example.watchmanagement.repository.WatchRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -14,10 +15,11 @@ import org.springframework.validation.BindingResult;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final WatchRepository watchRepository;
 
-    // Konstruktor bez passwordEncoder
-    public UserController(UserRepository userRepository) {
+    public UserController(UserRepository userRepository, WatchRepository watchRepository) {
         this.userRepository = userRepository;
+        this.watchRepository = watchRepository;
     }
 
     @GetMapping("/register")
@@ -68,12 +70,14 @@ public class UserController {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser != null) {
             model.addAttribute("username", loggedInUser.getUsername());
-            model.addAttribute("role", loggedInUser.getRole()); // Přidáno předání role
+            model.addAttribute("role", loggedInUser.getRole());
+            model.addAttribute("watches", watchRepository.findAll()); // Přidání seznamu hodinek
             return "home";
         } else {
             return "redirect:/login";
         }
     }
+
 
 
 
