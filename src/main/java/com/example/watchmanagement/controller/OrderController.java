@@ -103,21 +103,53 @@ public class OrderController {
                 .orElse(null);
 
         if (cart != null) {
+            Optional<OrderItem> itemToRemove = cart.getItems().stream()
+                    .filter(item -> item.getWatch().getId().equals(id))
+                    .findFirst();
+
+            if (itemToRemove.isPresent()) {
+                OrderItem item = itemToRemove.get();
+                if (item.getQuantity() > 1) {
+                    // Snížení počtu kusů
+                    item.setQuantity(item.getQuantity() - 1);
+                    orderItemRepository.save(item);
+                } else {
+                    // Odstranění položky, pokud je množství 1
+                    orderItemRepository.delete(item);
+                    cart.getItems().remove(item); // Aktualizace kolekce
+                    orderRepository.save(cart); // Uložíme změnu košíku
+                }
+            }
+        }
+
+        return "redirect:/order/cart";
+    }
+
+    @GetMapping("/cart/delete/{id}")
+    public String deleteFromCart(@PathVariable Long id, HttpSession session) {
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        if (loggedInUser == null) {
+            return "redirect:/login";
+        }
+
+        // Najdeme košík uživatele
+        Order cart = orderRepository.findByUserAndStatus(loggedInUser, "PENDING")
+                .orElse(null);
+
+        if (cart != null) {
             cart.getItems().stream()
                     .filter(item -> item.getWatch().getId().equals(id))
                     .findFirst()
                     .ifPresent(item -> {
-                        if (item.getQuantity() > 1) {
-                            item.setQuantity(item.getQuantity() - 1);
-                            orderItemRepository.save(item);
-                        } else {
-                            orderItemRepository.delete(item);
-                        }
+                        orderItemRepository.delete(item); // Odstraníme položku z databáze
+                        cart.getItems().remove(item);    // Odstraníme položku z kolekce
+                        orderRepository.save(cart);     // Uložíme změnu košíku
                     });
         }
 
         return "redirect:/order/cart";
     }
+
 
     @PostMapping("/cart/checkout")
     public String checkout(HttpSession session) {

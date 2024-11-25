@@ -20,12 +20,11 @@
     <h1 class="mt-4">Košík</h1>
 
     <!-- Zobrazení prázdného košíku -->
-    <div th:if="${cart.items.empty}">
+    <div th:if="${cart.items.size() == 0}">
         <p>Košík je prázdný.</p>
     </div>
 
-    <!-- Zobrazení položek v košíku -->
-    <div th:unless="${cart.items.empty}">
+    <div th:if="${cart.items.size() > 0}">
         <table class="table table-striped">
             <thead>
             <tr>
@@ -49,8 +48,13 @@
                 </td>
                 <td th:text="${item.quantity * item.watch.price}">0.00</td>
                 <td>
-                    <a th:href="@{/order/cart/remove/{id}(id=${item.watch.id})}" class="btn btn-sm btn-danger">Odstranit</a>
+                    <a th:href="@{/order/cart/delete/{id}(id=${item.watch.id})}"
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('Opravdu chcete odstranit všechny kusy této položky z košíku?')">
+                        Odstranit
+                    </a>
                 </td>
+
             </tr>
             </tbody>
         </table>
