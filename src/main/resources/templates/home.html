@@ -6,9 +6,10 @@
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href="/">Hodinky</a>
+  <a class="navbar-brand" href="/home">Hodinky</a>
   <div class="collapse navbar-collapse">
     <ul class="navbar-nav ml-auto">
+      <!-- Dynamická navigace na základě role -->
       <li class="nav-item">
         <a class="nav-link" th:href="@{/cart}">Košík</a>
       </li>
@@ -27,8 +28,15 @@
     </ul>
   </div>
 </nav>
+
 <div class="container">
-  <h1 class="mt-4">Dostupné modely hodinek</h1>
+  <!-- Informace o uživateli -->
+  <h1 class="mt-4">Vítejte, <span th:text="${username}">uživateli</span>!</h1>
+  <p th:if="${role == 'ADMIN'}" class="text-muted">Máte administrátorský přístup.</p>
+  <p th:if="${role == 'USER'}" class="text-muted">Máte přístup jako běžný uživatel.</p>
+
+  <!-- Seznam dostupných hodinek -->
+  <h2 class="mt-4">Dostupné modely hodinek</h2>
   <div class="row">
     <div class="col-md-4" th:each="watch : ${watches}">
       <div class="card mb-4">

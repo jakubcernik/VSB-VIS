@@ -68,12 +68,13 @@ public class UserController {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser != null) {
             model.addAttribute("username", loggedInUser.getUsername());
-            // Přidej další atributy, pokud je třeba
-            return "home"; // Vrátí šablonu `home.html`
+            model.addAttribute("role", loggedInUser.getRole()); // Přidáno předání role
+            return "home";
         } else {
-            return "redirect:/login"; // Přesměrování na login, pokud uživatel není přihlášen
+            return "redirect:/login";
         }
     }
+
 
 
     @GetMapping("/logout")
