@@ -26,6 +26,7 @@
             <th>Název</th>
             <th>Popis</th>
             <th>Cena</th>
+            <th>Skladem</th>
             <th>Obrázek</th>
             <th>Akce</th>
         </tr>
@@ -35,6 +36,7 @@
             <td th:text="${watch.name}">Název</td>
             <td th:text="${watch.description}">Popis</td>
             <td th:text="${watch.price}">Cena</td>
+            <td th:text="${watch.stock}">Skladem</td>
             <td>
                 <img th:src="@{${watch.image}}" alt="Obrázek hodinek" width="100">
             </td>

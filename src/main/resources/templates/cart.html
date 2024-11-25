@@ -43,8 +43,13 @@
                     <div class="d-flex align-items-center">
                         <a th:href="@{/order/cart/remove/{id}(id=${item.watch.id})}" class="btn btn-sm btn-secondary">-</a>
                         <span class="mx-2" th:text="${item.quantity}">1</span>
-                        <a th:href="@{/order/cart/add/{id}(id=${item.watch.id})}" class="btn btn-sm btn-secondary">+</a>
+                        <a th:if="${item.quantity < item.watch.stock}"
+                           th:href="@{/order/cart/add/{id}(id=${item.watch.id})}"
+                           class="btn btn-sm btn-secondary">+</a>
                     </div>
+                    <small class="text-muted" th:if="${item.quantity >= item.watch.stock}">
+                        Maximální dostupné množství.
+                    </small>
                 </td>
                 <td th:text="${item.quantity * item.watch.price}">0.00</td>
                 <td>

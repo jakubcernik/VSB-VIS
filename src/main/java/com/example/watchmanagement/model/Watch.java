@@ -26,6 +26,10 @@ public class Watch {
     @NotBlank(message = "URL obrázku je povinná")
     private String image;
 
+    @NotNull
+    @Min(0) // Počet skladem nesmí být záporný
+    private Integer stock;
+
     // Konstruktor bez parametrů
     public Watch() {}
 
@@ -77,5 +81,13 @@ public class Watch {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public int getStock() {
+        return stock;
+    }
+
+    public void setStock(int stock) {
+        this.stock = stock;
     }
 }

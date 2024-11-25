@@ -21,16 +21,16 @@
 <div class="container">
     <h1 class="mt-4">Upravit hodinky</h1>
 
-    <!-- Zobrazení validačních chyb -->
-    <div th:if="${#fields.hasErrors()}">
-        <div class="alert alert-danger">
-            <ul>
-                <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
-            </ul>
-        </div>
-    </div>
-
     <form th:action="@{/admin/watches/update/{id}(id=${watch.id})}" th:object="${watch}" method="post">
+        <!-- Zobrazení validačních chyb -->
+        <div th:if="${#fields.hasErrors()}">
+            <div class="alert alert-danger">
+                <ul>
+                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                </ul>
+            </div>
+        </div>
+
         <div class="form-group">
             <label for="name">Název</label>
             <input type="text" class="form-control" id="name" th:field="*{name}" required>
@@ -47,6 +47,11 @@
             <label for="image">URL obrázku</label>
             <input type="text" class="form-control" id="image" th:field="*{image}" required>
         </div>
+        <div class="form-group">
+            <label for="stock">Počet skladem</label>
+            <input type="number" class="form-control" id="stock" th:field="*{stock}" placeholder="Zadejte počet skladem" required>
+        </div>
+
         <button type="submit" class="btn btn-primary">Upravit</button>
     </form>
 </div>

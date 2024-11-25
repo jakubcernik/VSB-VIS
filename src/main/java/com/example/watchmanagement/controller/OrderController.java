@@ -58,11 +58,10 @@ public class OrderController {
         }
 
         Watch watch = watchRepository.findById(id).orElse(null);
-        if (watch == null) {
-            return "redirect:/home";
+        if (watch == null || watch.getStock() <= 0) { // Kontrola, zda je skladem
+            return "redirect:/order/cart";
         }
 
-        // Najdeme košík uživatele nebo vytvoříme nový
         Order cart = orderRepository.findByUserAndStatus(loggedInUser, "PENDING")
                 .orElseGet(() -> {
                     Order newCart = new Order();
@@ -71,15 +70,16 @@ public class OrderController {
                     return orderRepository.save(newCart);
                 });
 
-        // Přidáme položku do košíku nebo zvýšíme množství
         Optional<OrderItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getWatch().getId().equals(id))
                 .findFirst();
 
         if (existingItem.isPresent()) {
             OrderItem item = existingItem.get();
-            item.setQuantity(item.getQuantity() + 1);
-            orderItemRepository.save(item);
+            if (item.getQuantity() < watch.getStock()) { // Ověření, že nepřekročí sklad
+                item.setQuantity(item.getQuantity() + 1);
+                orderItemRepository.save(item);
+            }
         } else {
             OrderItem newItem = new OrderItem();
             newItem.setOrder(cart);
@@ -90,6 +90,7 @@ public class OrderController {
 
         return "redirect:/order/cart";
     }
+
 
     @GetMapping("/cart/remove/{id}")
     public String removeFromCart(@PathVariable Long id, HttpSession session) {

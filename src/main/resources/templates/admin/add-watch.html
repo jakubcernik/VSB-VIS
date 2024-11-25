@@ -47,6 +47,11 @@
             <label for="image">URL obrázku</label>
             <input type="text" class="form-control" id="image" th:field="*{image}" placeholder="Zadejte URL obrázku">
         </div>
+        <div class="form-group">
+            <label for="stock">Počet skladem</label>
+            <input type="number" class="form-control" id="stock" th:field="*{stock}" placeholder="Zadejte počet skladem" required>
+        </div>
+
         <button type="submit" class="btn btn-primary">Přidat</button>
     </form>
 </div>
