@@ -8,16 +8,16 @@
 <div class="container">
     <h1 class="mt-4">Registrace</h1>
 
-    <!-- Zobrazení validačních chyb -->
-    <div th:if="${#fields.hasErrors()}">
-        <div class="alert alert-danger">
-            <ul>
-                <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
-            </ul>
-        </div>
-    </div>
-
     <form th:action="@{/register}" th:object="${user}" method="post">
+        <!-- Zobrazení validačních chyb -->
+        <div th:if="${#fields.hasErrors()}">
+            <div class="alert alert-danger">
+                <ul>
+                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                </ul>
+            </div>
+        </div>
+        <input type="hidden" th:field="*{role}" value="USER"/>
         <div class="form-group">
             <label for="username">Uživatelské jméno</label>
             <input type="text" class="form-control" id="username" th:field="*{username}" required>

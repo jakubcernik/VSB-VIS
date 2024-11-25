@@ -20,7 +20,9 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         String uri = request.getRequestURI();
 
         // Povolena URL bez autentifikace
-        if (uri.equals("/login") || uri.equals("/register") || uri.startsWith("/css/") || uri.startsWith("/js/") || uri.startsWith("/images/")) {
+        if (uri.startsWith("/login") || uri.startsWith("/register") ||
+                uri.startsWith("/css/") || uri.startsWith("/js/") ||
+                uri.startsWith("/images/")) {
             return true;
         }
 

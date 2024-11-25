@@ -22,21 +22,26 @@ public class UserController {
 
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
-        model.addAttribute("user", new User());
+        User user = new User();
+        user.setRole("USER"); // Nastav výchozí hodnotu role
+        model.addAttribute("user", user);
         return "register";
     }
+
 
     @PostMapping("/register")
     public String registerUser(@ModelAttribute @Valid User user, BindingResult result, Model model) {
         if (result.hasErrors()) {
+            System.out.println("Validační chyby: " + result.getAllErrors());
             return "register";
         }
 
-        // Nastavení role před uložením uživatele
+        System.out.println("Uživatel je: " + user);
         user.setRole("USER");
         userRepository.save(user);
         return "redirect:/login";
     }
+
 
     @GetMapping("/login")
     public String showLoginForm(Model model) {
@@ -51,12 +56,25 @@ public class UserController {
         User user = userRepository.findByUsername(username);
         if (user != null && user.getPassword().equals(password)) { // Bez šifrování
             session.setAttribute("loggedInUser", user);
-            return "redirect:/";
+            return "redirect:/home";
         } else {
             model.addAttribute("error", "Neplatné uživatelské jméno nebo heslo.");
             return "login";
         }
     }
+
+    @GetMapping("/home")
+    public String showHomePage(Model model, HttpSession session) {
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        if (loggedInUser != null) {
+            model.addAttribute("username", loggedInUser.getUsername());
+            // Přidej další atributy, pokud je třeba
+            return "home"; // Vrátí šablonu `home.html`
+        } else {
+            return "redirect:/login"; // Přesměrování na login, pokud uživatel není přihlášen
+        }
+    }
+
 
     @GetMapping("/logout")
     public String logoutUser(HttpSession session) {

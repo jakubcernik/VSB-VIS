@@ -21,7 +21,6 @@ public class User {
     @Size(min = 6, message = "Heslo musí mít alespoň 6 znaků")
     private String password;
 
-    @NotBlank
     private String role;
 
     // Konstruktor bez parametrů
