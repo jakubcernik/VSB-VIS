@@ -21,7 +21,7 @@ public class Watch {
 
     @NotNull(message = "Cena je povinná")
     @Min(value = 0, message = "Cena musí být kladná")
-    private double price;
+    private int price;
 
     @NotBlank(message = "URL obrázku je povinná")
     private String image;
@@ -34,7 +34,7 @@ public class Watch {
     public Watch() {}
 
     // Konstruktor s parametry
-    public Watch(String name, String description, double price, String image) {
+    public Watch(String name, String description, int price, String image) {
         this.name = name;
         this.description = description;
         this.price = price;
@@ -67,11 +67,11 @@ public class Watch {
         this.description = description;
     }
 
-    public double getPrice() {
+    public int getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(int price) {
         this.price = price;
     }
 

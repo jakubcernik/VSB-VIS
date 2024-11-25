@@ -3,13 +3,13 @@
 <head>
   <title>Správa hodinek</title>
   <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+  <link rel="stylesheet" th:href="@{/css/home.css}">
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <a class="navbar-brand" href="/home">Domů</a>
   <div class="collapse navbar-collapse">
     <ul class="navbar-nav ml-auto">
-      <!-- Dynamická navigace na základě role -->
       <li class="nav-item">
         <a class="nav-link" th:href="@{/order/cart}">Košík</a>
       </li>
@@ -38,14 +38,19 @@
   <!-- Seznam dostupných hodinek -->
   <h2 class="mt-4">Dostupné modely hodinek</h2>
   <div class="row">
-    <div class="col-md-4" th:each="watch : ${watches}">
+    <div class="col-md-3" th:each="watch : ${watches}">
       <div class="card mb-4">
         <img th:src="@{${watch.image}}" class="card-img-top" alt="Obrázek hodinek">
         <div class="card-body">
           <h5 class="card-title" th:text="${watch.name}">Název hodinek</h5>
-          <p class="card-text" th:text="${watch.description}">Popis hodinek</p>
-          <p class="card-text">Cena: Kč <span th:text="${watch.price}">0.00</span></p>
-          <a th:href="@{/order/cart/add/{id}(id=${watch.id})}" class="btn btn-primary">Přidat do košíku</a>
+          <p class="card-text"><strong>Cena:</strong> <span th:text="${watch.price}">0</span>,- Kč</p>
+          <p class="card-text">
+            <strong>Skladem:</strong> <span th:text="${watch.stock}">0</span> ks
+          </p>
+        </div>
+        <div class="card-footer">
+          <a th:if="${watch.stock > 0}" th:href="@{/order/cart/add/{id}(id=${watch.id})}" class="btn btn-primary btn-sm">Přidat do košíku</a>
+          <p th:if="${watch.stock == 0}" class="text-danger">Není skladem</p>
         </div>
       </div>
     </div>

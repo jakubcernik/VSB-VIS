@@ -38,7 +38,7 @@
             <tbody>
             <tr th:each="item : ${cart.items}">
                 <td th:text="${item.watch.name}">Název hodinek</td>
-                <td th:text="${item.watch.price}">0.00</td>
+                <td th:text="${item.watch.price}">0.00<p>,- Kč</p>></td>
                 <td>
                     <div class="d-flex align-items-center">
                         <a th:href="@{/order/cart/remove/{id}(id=${item.watch.id})}" class="btn btn-sm btn-secondary">-</a>
@@ -48,7 +48,7 @@
                            class="btn btn-sm btn-secondary">+</a>
                     </div>
                     <small class="text-muted" th:if="${item.quantity >= item.watch.stock}">
-                        Maximální dostupné množství.
+                        Více toho skladem nemáme
                     </small>
                 </td>
                 <td th:text="${item.quantity * item.watch.price}">0.00</td>
