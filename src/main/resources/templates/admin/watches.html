@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Správa hodinek</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="/">Hodinky</a>
+    <div class="collapse navbar-collapse">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/watches/new}">Přidat hodinky</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/logout}">Odhlásit se</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<div class="container">
+    <h1 class="mt-4">Správa hodinek</h1>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Název</th>
+            <th>Popis</th>
+            <th>Cena</th>
+            <th>Obrázek</th>
+            <th>Akce</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="watch : ${watches}">
+            <td th:text="${watch.name}">Název</td>
+            <td th:text="${watch.description}">Popis</td>
+            <td th:text="${watch.price}">Cena</td>
+            <td>
+                <img th:src="@{${watch.image}}" alt="Obrázek hodinek" width="100">
+            </td>
+            <td>
+                <a th:href="@{/admin/watches/edit/{id}(id=${watch.id})}" class="btn btn-warning btn-sm">Upravit</a>
+                <a th:href="@{/admin/watches/delete/{id}(id=${watch.id})}" class="btn btn-danger btn-sm" onclick="return confirm('Opravdu smazat?');">Smazat</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

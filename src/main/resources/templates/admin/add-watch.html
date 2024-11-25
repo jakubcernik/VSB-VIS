@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Přidat hodinky</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body>
+<div class="container">
+    <h1 class="mt-4">Přidat nové hodinky</h1>
+
+    <!-- Zobrazení validačních chyb -->
+    <div th:if="${#fields.hasErrors()}">
+        <div class="alert alert-danger">
+            <ul>
+                <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+            </ul>
+        </div>
+    </div>
+
+    <form th:action="@{/admin/watches}" th:object="${watch}" method="post">
+        <div class="form-group">
+            <label for="name">Název</label>
+            <input type="text" class="form-control" id="name" th:field="*{name}" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Popis</label>
+            <textarea class="form-control" id="description" th:field="*{description}" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="price">Cena</label>
+            <input type="number" step="0.01" class="form-control" id="price" th:field="*{price}" required>
+        </div>
+        <div class="form-group">
+            <label for="image">URL obrázku</label>
+            <input type="text" class="form-control" id="image" th:field="*{image}" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Přidat</button>
+    </form>
+</div>
+</body>
+</html>
