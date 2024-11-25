@@ -1,10 +1,11 @@
 package com.example.watchmanagement.model;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "orders") // "order" je rezervované slovo v SQL
+@Table(name = "orders")
 public class Order {
 
     @Id
@@ -12,20 +13,18 @@ public class Order {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private String status;
+    @Column(nullable = false)
+    private double totalPrice = 0.00; // Výchozí hodnot
 
-    private double totalPrice;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> items = new ArrayList<>();
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private List<OrderItem> orderItems;
-
-    // Konstruktor bez parametrů
-    public Order() {}
+    private String status; // PENDING, CONFIRMED, etc.
 
     // Gettery a settery
-
     public Long getId() {
         return id;
     }
@@ -42,27 +41,19 @@ public class Order {
         this.user = user;
     }
 
+    public List<OrderItem> getItems() {
+        return items;
+    }
+
+    public void setItems(List<OrderItem> items) {
+        this.items = items;
+    }
+
     public String getStatus() {
         return status;
     }
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public double getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(double totalPrice) {
-        this.totalPrice = totalPrice;
-    }
-
-    public List<OrderItem> getOrderItems() {
-        return orderItems;
-    }
-
-    public void setOrderItems(List<OrderItem> orderItems) {
-        this.orderItems = orderItems;
     }
 }

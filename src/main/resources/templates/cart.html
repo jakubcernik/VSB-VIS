@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Košík</title>
+    <title>Váš košík</title>
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
 </head>
 <body>
@@ -17,40 +17,44 @@
 </nav>
 
 <div class="container">
-    <h1 class="mt-4">Váš košík</h1>
-    <div th:if="${cart.isEmpty()}">
-        <p>Váš košík je prázdný.</p>
+    <h1 class="mt-4">Košík</h1>
+
+    <!-- Zobrazení prázdného košíku -->
+    <div th:if="${cart.items.empty}">
+        <p>Košík je prázdný.</p>
     </div>
-    <div th:unless="${cart.isEmpty()}">
+
+    <!-- Zobrazení položek v košíku -->
+    <div th:unless="${cart.items.empty}">
         <table class="table table-striped">
             <thead>
             <tr>
                 <th>Název</th>
                 <th>Cena za kus</th>
-                <th>Počet kusů</th>
-                <th>Celkem</th>
+                <th>Počet</th>
+                <th>Celková cena</th>
                 <th>Akce</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="entry : ${cart}">
-                <td th:text="${watchDetails[entry.key].name}">Název hodinek</td>
-                <td th:text="${watchDetails[entry.key].price}">0.00</td>
+            <tr th:each="item : ${cart.items}">
+                <td th:text="${item.watch.name}">Název hodinek</td>
+                <td th:text="${item.watch.price}">0.00</td>
                 <td>
                     <div class="d-flex align-items-center">
-                        <a th:href="@{/cart/remove/{id}(id=${entry.key})}" class="btn btn-sm btn-secondary">-</a>
-                        <span class="mx-2" th:text="${entry.value}">1</span>
-                        <a th:href="@{/cart/add/{id}(id=${entry.key})}" class="btn btn-sm btn-secondary">+</a>
+                        <a th:href="@{/order/cart/remove/{id}(id=${item.watch.id})}" class="btn btn-sm btn-secondary">-</a>
+                        <span class="mx-2" th:text="${item.quantity}">1</span>
+                        <a th:href="@{/order/cart/add/{id}(id=${item.watch.id})}" class="btn btn-sm btn-secondary">+</a>
                     </div>
                 </td>
-                <td th:text="${watchDetails[entry.key].price * entry.value}">0.00</td>
+                <td th:text="${item.quantity * item.watch.price}">0.00</td>
                 <td>
-                    <a th:href="@{/cart/delete/{id}(id=${entry.key})}" class="btn btn-sm btn-danger">Odstranit</a>
+                    <a th:href="@{/order/cart/remove/{id}(id=${item.watch.id})}" class="btn btn-sm btn-danger">Odstranit</a>
                 </td>
             </tr>
             </tbody>
         </table>
-        <a href="/home" class="btn btn-secondary mt-3">Pokračovat v nakupování</a>
+        <a th:href="@{/order/cart/checkout}" class="btn btn-primary mt-3">Dokončit objednávku</a>
     </div>
 </div>
 </body>

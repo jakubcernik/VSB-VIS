@@ -11,7 +11,7 @@
     <ul class="navbar-nav ml-auto">
       <!-- Dynamická navigace na základě role -->
       <li class="nav-item">
-        <a class="nav-link" th:href="@{/cart}">Košík</a>
+        <a class="nav-link" th:href="@{/order/cart}">Košík</a>
       </li>
       <li class="nav-item" th:if="${username == null}">
         <a class="nav-link" th:href="@{/register}">Registrovat</a>
@@ -45,7 +45,7 @@
           <h5 class="card-title" th:text="${watch.name}">Název hodinek</h5>
           <p class="card-text" th:text="${watch.description}">Popis hodinek</p>
           <p class="card-text">Cena: Kč <span th:text="${watch.price}">0.00</span></p>
-          <a th:href="@{/cart/add/{id}(id=${watch.id})}" class="btn btn-primary">Přidat do košíku</a>
+          <a th:href="@{/order/cart/add/{id}(id=${watch.id})}" class="btn btn-primary">Přidat do košíku</a>
         </div>
       </div>
     </div>

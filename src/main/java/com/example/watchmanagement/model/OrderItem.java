@@ -10,18 +10,16 @@ public class OrderItem {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     @ManyToOne
+    @JoinColumn(name = "watch_id", nullable = false)
     private Watch watch;
 
     private int quantity;
 
-    // Konstruktor bez parametrů
-    public OrderItem() {}
-
     // Gettery a settery
-
     public Long getId() {
         return id;
     }
