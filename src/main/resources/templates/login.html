@@ -9,12 +9,13 @@
     <h1 class="mt-4">Přihlášení</h1>
 
     <!-- Zobrazení chyb při přihlášení -->
-    <div th:if="${param.error}">
+    <div th:if="${error}">
         <div class="alert alert-danger">
-            Neplatné uživatelské jméno nebo heslo.
+            <p th:text="${error}">Neplatné uživatelské jméno nebo heslo.</p>
         </div>
     </div>
 
+    <!-- Zobrazení zprávy o odhlášení -->
     <div th:if="${param.logout}">
         <div class="alert alert-success">
             Byli jste úspěšně odhlášeni.

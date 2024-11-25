@@ -9,5 +9,4 @@ public class WatchmanagementApplication {
     public static void main(String[] args) {
         SpringApplication.run(WatchmanagementApplication.class, args);
     }
-
 }

@@ -32,7 +32,7 @@ public class UserController {
             return "register";
         }
 
-        // Ukládání hesla bez šifrování (neodporučené)
+        // Nastavení role před uložením uživatele
         user.setRole("USER");
         userRepository.save(user);
         return "redirect:/login";

@@ -17,28 +17,37 @@
 </nav>
 <div class="container">
     <h1 class="mt-4">Váš košík</h1>
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Název</th>
-            <th>Cena</th>
-            <th>Množství</th>
-            <th>Akce</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="entry : ${items}">
-            <td th:text="${entry.key.name}">Název hodinek</td>
-            <td th:text="${entry.key.price}">0.00</td>
-            <td th:text="${entry.value}">1</td>
-            <td>
-                <a th:href="@{/cart/remove/{id}(id=${entry.key.id})}" class="btn btn-danger btn-sm">Odebrat</a>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-    <h3>Celková cena: Kč <span th:text="${totalPrice}">0.00</span></h3>
-    <a th:href="@{/order/create}" class="btn btn-success">Vytvořit objednávku</a>
+
+    <div th:if="${session.loggedInUser == null}">
+        <div class="alert alert-warning">
+            <p>Nejste přihlášeni. Prosím <a th:href="@{/login}">přihlaste se</a> nebo <a th:href="@{/register}">registrovat</a>.</p>
+        </div>
+    </div>
+
+    <div th:if="${session.loggedInUser != null}">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Název</th>
+                <th>Cena</th>
+                <th>Množství</th>
+                <th>Akce</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="entry : ${items}">
+                <td th:text="${entry.key.name}">Název hodinek</td>
+                <td th:text="${entry.key.price}">0.00</td>
+                <td th:text="${entry.value}">1</td>
+                <td>
+                    <a th:href="@{/cart/remove/{id}(id=${entry.key.id})}" class="btn btn-danger btn-sm">Odebrat</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <h3>Celková cena: Kč <span th:text="${totalPrice}">0.00</span></h3>
+        <a th:href="@{/order/create}" class="btn btn-success">Vytvořit objednávku</a>
+    </div>
 </div>
 </body>
 </html>

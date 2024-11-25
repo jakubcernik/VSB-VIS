@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 @Entity
+@Table(name = "users") // "user" je rezervované slovo v SQL
 public class User {
 
     @Id
@@ -26,7 +27,7 @@ public class User {
     // Konstruktor bez parametrů
     public User() {}
 
-    // Konstruktor s parametry (volitelné)
+    // Konstruktor s parametry
     public User(String username, String password, String role) {
         this.username = username;
         this.password = password;
