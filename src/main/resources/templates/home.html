@@ -2,16 +2,19 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <title>Správa hodinek</title>
-  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
   <link rel="stylesheet" th:href="@{/css/home.css}">
+  <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <a class="navbar-brand" href="/home">Domů</a>
   <div class="collapse navbar-collapse">
     <ul class="navbar-nav ml-auto">
-      <li class="nav-item">
+      <li class="nav-item" th:if="${role != 'ADMIN'}">
         <a class="nav-link" th:href="@{/order/cart}">Košík</a>
+      </li>
+      <li class="nav-item" th:if="${username != null and role != 'ADMIN'}">
+        <a class="nav-link" th:href="@{/order/orders}">Moje objednávky</a>
       </li>
       <li class="nav-item" th:if="${username == null}">
         <a class="nav-link" th:href="@{/register}">Registrovat</a>
@@ -43,6 +46,7 @@
         <img th:src="@{${watch.image}}" class="card-img-top" alt="Obrázek hodinek">
         <div class="card-body">
           <h5 class="card-title" th:text="${watch.name}">Název hodinek</h5>
+          <p class="card-text"><strong>Popis:</strong> <span th:text="${watch.description}"></span></p>
           <p class="card-text"><strong>Cena:</strong> <span th:text="${watch.price}">0</span>,- Kč</p>
           <p class="card-text">
             <strong>Skladem:</strong> <span th:text="${watch.stock}">0</span> ks

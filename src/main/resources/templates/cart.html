@@ -6,9 +6,15 @@
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="/home">Hodinky</a>
+    <a class="navbar-brand" href="/home">Domů</a>
     <div class="collapse navbar-collapse">
         <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/order/cart}">Košík</a>
+            </li>
+            <li class="nav-item" th:if="${username != null}">
+                <a class="nav-link" th:href="@{/order/orders}">Moje objednávky</a>
+            </li>
             <li class="nav-item">
                 <a class="nav-link" th:href="@{/logout}">Odhlásit se</a>
             </li>

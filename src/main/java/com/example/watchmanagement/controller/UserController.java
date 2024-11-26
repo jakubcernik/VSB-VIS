@@ -71,15 +71,13 @@ public class UserController {
         if (loggedInUser != null) {
             model.addAttribute("username", loggedInUser.getUsername());
             model.addAttribute("role", loggedInUser.getRole());
-            model.addAttribute("watches", watchRepository.findAll()); // Přidání seznamu hodinek
-            return "home";
         } else {
-            return "redirect:/login";
+            model.addAttribute("username", "guest");
+            model.addAttribute("role", "USER");
         }
+        model.addAttribute("watches", watchRepository.findAll()); // Přidání seznamu hodinek
+        return "home";
     }
-
-
-
 
     @GetMapping("/logout")
     public String logoutUser(HttpSession session) {

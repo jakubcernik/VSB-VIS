@@ -1,7 +1,10 @@
 package com.example.watchmanagement.controller;
 
+import com.example.watchmanagement.model.Order;
+import com.example.watchmanagement.model.OrderItem;
 import com.example.watchmanagement.model.User;
 import com.example.watchmanagement.model.Watch;
+import com.example.watchmanagement.repository.OrderRepository;
 import com.example.watchmanagement.repository.WatchRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,14 +12,18 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
 
     private final WatchRepository watchRepository;
+    private final OrderRepository orderRepository;
 
-    public AdminController(WatchRepository watchRepository) {
+    public AdminController(WatchRepository watchRepository, OrderRepository orderRepository) {
         this.watchRepository = watchRepository;
+        this.orderRepository = orderRepository;
     }
 
     @GetMapping("/watches")
@@ -80,4 +87,37 @@ public class AdminController {
         watchRepository.deleteById(id);
         return "redirect:/admin/watches";
     }
+
+    @GetMapping("/orders-to-confirm")
+    public String showOrdersToConfirm(Model model) {
+        // Načte všechny objednávky ve stavu CREATED
+        List<Order> orders = orderRepository.findByStatus("CREATED");
+        model.addAttribute("orders", orders);
+        return "/admin/orders-to-confirm"; // Vrací šablonu orders-to-confirm.html
+    }
+
+    @GetMapping("/orders/approve/{id}")
+    public String approveOrder(@PathVariable Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid order ID"));
+        order.setStatus("COMPLETED");
+        orderRepository.save(order);
+        return "redirect:/admin/orders-to-confirm";
+    }
+
+    @GetMapping("/orders/reject/{id}")
+    public String rejectOrder(@PathVariable Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid order ID"));
+        // Vrácení skladových zásob
+        for (OrderItem item : order.getItems()) {
+            Watch watch = item.getWatch();
+            watch.setStock(watch.getStock() + item.getQuantity());
+            watchRepository.save(watch); // Uložení změny zásob
+        }
+        order.setStatus("CANCELED");
+        orderRepository.save(order);
+        return "redirect:/admin/orders-to-confirm";
+    }
+
 }

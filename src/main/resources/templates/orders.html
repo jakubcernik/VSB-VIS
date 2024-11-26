@@ -31,6 +31,9 @@
             <li class="nav-item">
                 <a class="nav-link" th:href="@{/order/cart}">Košík</a>
             </li>
+            <li class="nav-item" th:if="${username != null}">
+                <a class="nav-link" th:href="@{/order/orders}">Moje objednávky</a>
+            </li>
             <li class="nav-item">
                 <a class="nav-link" th:href="@{/logout}">Odhlásit se</a>
             </li>
@@ -58,7 +61,15 @@
             <tr th:each="order : ${orders}">
                 <td th:text="${order.id}">1</td>
                 <td th:text="${#dates.format(order.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2024</td>
-                <td th:text="${order.status}">CREATED</td>
+                <td>
+    <span th:switch="${order.status}">
+        <span th:case="'CREATED'">čeká na schválení</span>
+        <span th:case="'COMPLETED'">schváleno</span>
+        <span th:case="'CANCELED'">stornováno</span>
+        <span th:case="*">neznámý stav</span> <!-- Pro případ, že by byl stav jiný -->
+    </span>
+                </td>
+
                 <td th:text="${order.totalPrice}">0.00</td>
                 <td>
                     <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#invoiceModal"

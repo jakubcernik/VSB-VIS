@@ -28,7 +28,7 @@ public class Watch {
 
     @NotNull
     @Min(0) // Počet skladem nesmí být záporný
-    private Integer stock;
+    private int stock;
 
     // Konstruktor bez parametrů
     public Watch() {}

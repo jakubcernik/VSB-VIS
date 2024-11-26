@@ -1,5 +1,5 @@
 .card {
-    height: 380px; /* Nastavení stejné výšky karet */
+    height: 500px !important; /* Nastavení stejné výšky karet */
     display: flex;
     flex-direction: column;
     justify-content: space-between; /* Zajištění rovnoměrného rozmístění */
@@ -10,7 +10,7 @@
     padding: 10px;
 }
 .card-title {
-    font-size: 1.2rem; /* Zvětšení názvu pro lepší čitelnost */
+    font-size: 1.1rem; /* Zvětšení názvu pro lepší čitelnost */
     text-align: center; /* Zarovnání na střed */
     height: 70px;
 }

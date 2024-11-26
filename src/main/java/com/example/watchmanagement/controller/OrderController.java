@@ -7,12 +7,6 @@ import com.example.watchmanagement.model.Watch;
 import com.example.watchmanagement.repository.OrderRepository;
 import com.example.watchmanagement.repository.OrderItemRepository;
 import com.example.watchmanagement.repository.WatchRepository;
-import jakarta.annotation.Resource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -46,6 +40,7 @@ public class OrderController {
         if (loggedInUser == null) {
             return "redirect:/login"; // Přesměrování, pokud není uživatel přihlášen
         }
+        else model.addAttribute("username", loggedInUser.getUsername());
 
         // Najdeme košík uživatele (stav PENDING)
         Order cart = orderRepository.findByUserAndStatus(loggedInUser, "PENDING")
@@ -219,6 +214,18 @@ public class OrderController {
         cart.setCustomerAddress(order.getCustomerAddress());
         cart.setPaymentMethod(order.getPaymentMethod());
         cart.setStatus("CREATED");
+
+        // Odečtení skladových zásob
+        for (OrderItem item : cart.getItems()) {
+            Watch watch = item.getWatch();
+            int newStock = watch.getStock() - item.getQuantity();
+            if (newStock < 0) {
+                throw new IllegalStateException("Nedostatečné zásoby pro produkt: " + watch.getName());
+            }
+            watch.setStock(newStock);
+            watchRepository.save(watch); // Uložení změny zásob
+        }
+
         orderRepository.save(cart);
 
         // Generování faktury
@@ -239,6 +246,7 @@ public class OrderController {
         if (loggedInUser == null) {
             return "redirect:/login";
         }
+        else model.addAttribute("username", loggedInUser.getUsername());
 
         List<Order> orders = orderRepository.findByUserAndStatusNot(loggedInUser, "PENDING");
         model.addAttribute("orders", orders);
