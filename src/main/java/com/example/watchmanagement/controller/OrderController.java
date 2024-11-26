@@ -7,11 +7,22 @@ import com.example.watchmanagement.model.Watch;
 import com.example.watchmanagement.repository.OrderRepository;
 import com.example.watchmanagement.repository.OrderItemRepository;
 import com.example.watchmanagement.repository.WatchRepository;
+import jakarta.annotation.Resource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +58,14 @@ public class OrderController {
 
         model.addAttribute("cart", cart);
         return "cart"; // Vrátí šablonu cart.html
+    }
+
+    private void updateTotalPrice(Order order) {
+        double total = order.getItems().stream()
+                .mapToDouble(item -> item.getQuantity() * item.getWatch().getPrice())
+                .sum();
+        order.setTotalPrice(total);
+        orderRepository.save(order);
     }
 
 
@@ -87,7 +106,7 @@ public class OrderController {
             newItem.setQuantity(1);
             orderItemRepository.save(newItem);
         }
-
+        updateTotalPrice(cart);
         return "redirect:/order/cart";
     }
 
@@ -122,7 +141,7 @@ public class OrderController {
                 }
             }
         }
-
+        updateTotalPrice(cart);
         return "redirect:/order/cart";
     }
 
@@ -147,28 +166,143 @@ public class OrderController {
                         orderRepository.save(cart);     // Uložíme změnu košíku
                     });
         }
-
+        updateTotalPrice(cart);
         return "redirect:/order/cart";
+    }
+
+    @GetMapping("/cart/checkout")
+    public String showCheckoutForm(Model model, HttpSession session) {
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        if (loggedInUser == null) {
+            return "redirect:/login";
+        }
+
+        // Najdeme košík uživatele (stav PENDING)
+        Order cart = orderRepository.findByUserAndStatus(loggedInUser, "PENDING")
+                .orElseGet(() -> {
+                    // Pokud není nalezen, vrátíme null nebo nový objekt
+                    Order newCart = new Order();
+                    newCart.setUser(loggedInUser);
+                    newCart.setStatus("PENDING");
+                    return newCart; // Tento košík není uložen do databáze
+                });
+
+        if (cart.getItems() == null || cart.getItems().isEmpty()) {
+            return "redirect:/order/cart"; // Přesměrování, pokud je košík prázdný
+        }
+
+        model.addAttribute("order", cart); // Přidání do modelu
+        return "checkout"; // Odkaz na šablonu
     }
 
 
     @PostMapping("/cart/checkout")
-    public String checkout(HttpSession session) {
+    public String processCheckout(@ModelAttribute("order") Order order, HttpSession session) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser == null) {
-            return "redirect:/login"; // Přesměrování na login
+            return "redirect:/login";
         }
 
-        Order cart = orderRepository.findByUserAndStatus(loggedInUser, "PENDING")
+        if (order.getId() == null) {
+            throw new IllegalArgumentException("Order ID cannot be null");
+        }
+
+        Order cart = orderRepository.findById(order.getId())
                 .orElse(null);
 
         if (cart == null || cart.getItems().isEmpty()) {
-            return "redirect:/order/cart"; // Pokud je košík prázdný
+            return "redirect:/order/cart";
         }
 
-        cart.setStatus("CONFIRMED");
-        orderRepository.save(cart); // Uložíme změnu stavu
-        return "redirect:/orders"; // Přesměrování na stránku s historií objednávek
+        // Aktualizace údajů objednávky
+        cart.setCustomerName(order.getCustomerName());
+        cart.setCustomerAddress(order.getCustomerAddress());
+        cart.setPaymentMethod(order.getPaymentMethod());
+        cart.setStatus("CREATED");
+        orderRepository.save(cart);
+
+        // Generování faktury
+        try {
+            generateInvoiceFile(cart);
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Můžete přidat logiku pro zobrazení chyby uživateli
+        }
+
+        return "redirect:/order/orders";
+    }
+
+
+    @GetMapping("/orders")
+    public String showOrders(Model model, HttpSession session) {
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        if (loggedInUser == null) {
+            return "redirect:/login";
+        }
+
+        List<Order> orders = orderRepository.findByUserAndStatusNot(loggedInUser, "PENDING");
+        model.addAttribute("orders", orders);
+
+        return "orders"; // Vrací šablonu `orders.html`
+    }
+
+    @GetMapping("/invoice/{id}")
+    @ResponseBody
+    public String getInvoice(@PathVariable Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid order ID"));
+
+        StringBuilder invoiceContent = new StringBuilder();
+        invoiceContent.append("Faktura č. ").append(order.getId()).append("\n");
+        invoiceContent.append("Jméno: ").append(order.getCustomerName()).append("\n");
+        invoiceContent.append("Adresa: ").append(order.getCustomerAddress()).append("\n");
+        invoiceContent.append("Platební metoda: ").append(order.getPaymentMethod()).append("\n");
+        invoiceContent.append("Položky:\n");
+
+        for (OrderItem item : order.getItems()) {
+            invoiceContent.append("- ").append(item.getWatch().getName())
+                    .append(", ks: ").append(item.getQuantity())
+                    .append(", cena: ").append(item.getQuantity() * item.getWatch().getPrice())
+                    .append(" Kč\n");
+        }
+
+        invoiceContent.append("Celková cena: ").append(order.getTotalPrice()).append(" Kč\n");
+        return invoiceContent.toString();
+    }
+
+    private void generateInvoiceFile(Order order) throws IOException {
+        // Cesta k uložení souborů
+        Path invoiceDir = Paths.get("invoices");
+        if (!Files.exists(invoiceDir)) {
+            Files.createDirectories(invoiceDir);
+        }
+
+        // Název souboru
+        Path invoiceFile = invoiceDir.resolve("invoice_" + order.getId() + ".txt");
+
+        // Obsah faktury
+        String invoiceContent = generateInvoice(order);
+
+        // Zápis do souboru
+        Files.writeString(invoiceFile, invoiceContent);
+    }
+
+    private String generateInvoice(Order order) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Faktura číslo: ").append(order.getId()).append("\n");
+        sb.append("Jméno: ").append(order.getCustomerName()).append("\n");
+        sb.append("Adresa: ").append(order.getCustomerAddress()).append("\n");
+        sb.append("Platební metoda: ").append(order.getPaymentMethod()).append("\n");
+        sb.append("Stav: ").append(order.getStatus()).append("\n");
+        sb.append("Celková cena: ").append(order.getTotalPrice()).append("\n\n");
+        sb.append("Položky objednávky:\n");
+        for (OrderItem item : order.getItems()) {
+            sb.append("- ").append(item.getWatch().getName())
+                    .append(", ks: ").append(item.getQuantity())
+                    .append(", cena za kus: ").append(item.getWatch().getPrice())
+                    .append("\n");
+        }
+        return sb.toString();
     }
 
 }
