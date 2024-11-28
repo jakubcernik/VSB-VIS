@@ -23,17 +23,13 @@ public class User {
 
     private String role;
 
-    // Konstruktor bez parametrů
     public User() {}
 
-    // Konstruktor s parametry
     public User(String username, String password, String role) {
         this.username = username;
         this.password = password;
         this.role = role;
     }
-
-    // Gettery a settery
 
     public Long getId() {
         return id;

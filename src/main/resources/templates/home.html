@@ -33,12 +33,12 @@
 </nav>
 
 <div class="container">
-  <!-- Informace o uživateli -->
+  <!-- User info -->
   <h1 class="mt-4">Vítejte, <span th:text="${username}">uživateli</span>!</h1>
   <p th:if="${role == 'ADMIN'}" class="text-muted">Máte administrátorský přístup.</p>
   <p th:if="${role == 'USER'}" class="text-muted">Máte přístup jako běžný uživatel.</p>
 
-  <!-- Seznam dostupných hodinek -->
+  <!-- Watch list -->
   <h2 class="mt-4">Dostupné modely hodinek</h2>
   <div class="row">
     <div class="col-md-3" th:each="watch : ${watches}">

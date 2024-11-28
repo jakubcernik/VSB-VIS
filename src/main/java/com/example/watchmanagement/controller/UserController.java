@@ -6,7 +6,6 @@ import com.example.watchmanagement.repository.WatchRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
@@ -25,14 +24,14 @@ public class UserController {
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
         User user = new User();
-        user.setRole("USER"); // Nastav výchozí hodnotu role
+        user.setRole("USER");
         model.addAttribute("user", user);
         return "register";
     }
 
 
     @PostMapping("/register")
-    public String registerUser(@ModelAttribute @Valid User user, BindingResult result, Model model) {
+    public String registerUser(@ModelAttribute @Valid User user, BindingResult result) {
         if (result.hasErrors()) {
             System.out.println("Validační chyby: " + result.getAllErrors());
             return "register";
@@ -46,7 +45,7 @@ public class UserController {
 
 
     @GetMapping("/login")
-    public String showLoginForm(Model model) {
+    public String showLoginForm() {
         return "login";
     }
 
@@ -56,7 +55,7 @@ public class UserController {
                             Model model,
                             HttpSession session) {
         User user = userRepository.findByUsername(username);
-        if (user != null && user.getPassword().equals(password)) { // Bez šifrování
+        if (user != null && user.getPassword().equals(password)) {
             session.setAttribute("loggedInUser", user);
             return "redirect:/home";
         } else {
@@ -75,7 +74,7 @@ public class UserController {
             model.addAttribute("username", "guest");
             model.addAttribute("role", "USER");
         }
-        model.addAttribute("watches", watchRepository.findAll()); // Přidání seznamu hodinek
+        model.addAttribute("watches", watchRepository.findAll());
         return "home";
     }
 

@@ -27,21 +27,17 @@ public class Watch {
     private String image;
 
     @NotNull
-    @Min(0) // Počet skladem nesmí být záporný
+    @Min(0)
     private int stock;
 
-    // Konstruktor bez parametrů
     public Watch() {}
 
-    // Konstruktor s parametry
     public Watch(String name, String description, int price, String image) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.image = image;
     }
-
-    // Gettery a settery
 
     public Long getId() {
         return id;

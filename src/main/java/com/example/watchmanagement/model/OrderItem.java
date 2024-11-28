@@ -19,7 +19,6 @@ public class OrderItem {
 
     private int quantity;
 
-    // Gettery a settery
     public Long getId() {
         return id;
     }

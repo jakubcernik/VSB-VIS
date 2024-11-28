@@ -11,13 +11,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
-
 import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
-
     private final WatchRepository watchRepository;
     private final OrderRepository orderRepository;
 
@@ -90,10 +88,10 @@ public class AdminController {
 
     @GetMapping("/orders-to-confirm")
     public String showOrdersToConfirm(Model model) {
-        // Načte všechny objednávky ve stavu CREATED
+        // All orders in CREATED state
         List<Order> orders = orderRepository.findByStatus("CREATED");
         model.addAttribute("orders", orders);
-        return "/admin/orders-to-confirm"; // Vrací šablonu orders-to-confirm.html
+        return "/admin/orders-to-confirm";
     }
 
     @GetMapping("/orders/approve/{id}")
@@ -109,12 +107,13 @@ public class AdminController {
     public String rejectOrder(@PathVariable Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid order ID"));
-        // Vrácení skladových zásob
+
         for (OrderItem item : order.getItems()) {
             Watch watch = item.getWatch();
             watch.setStock(watch.getStock() + item.getQuantity());
-            watchRepository.save(watch); // Uložení změny zásob
+            watchRepository.save(watch);
         }
+
         order.setStatus("CANCELED");
         orderRepository.save(order);
         return "redirect:/admin/orders-to-confirm";

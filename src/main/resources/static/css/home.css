@@ -1,19 +1,19 @@
 .card {
-    height: 500px !important; /* Nastavení stejné výšky karet */
+    height: 500px !important;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Zajištění rovnoměrného rozmístění */
+    justify-content: space-between;
 }
 .card img {
-    height: 150px; /* Menší obrázky */
-    object-fit: contain; /* Zajistí zachování proporcí obrázků */
+    height: 150px;
+    object-fit: contain; /* Ratio */
     padding: 10px;
 }
 .card-title {
-    font-size: 1.1rem; /* Zvětšení názvu pro lepší čitelnost */
-    text-align: center; /* Zarovnání na střed */
+    font-size: 1.1rem;
+    text-align: center;
     height: 70px;
 }
 .card-footer {
-    text-align: center; /* Zarovnání tlačítka na střed */
+    text-align: center;
 }

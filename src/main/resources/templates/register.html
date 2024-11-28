@@ -9,7 +9,7 @@
     <h1 class="mt-4">Registrace</h1>
 
     <form th:action="@{/register}" th:object="${user}" method="post">
-        <!-- Zobrazení validačních chyb -->
+
         <div th:if="${#fields.hasErrors()}">
             <div class="alert alert-danger">
                 <ul>

@@ -38,21 +38,21 @@ public class OrderController {
     public String showCart(Model model, HttpSession session) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser == null) {
-            return "redirect:/login"; // Přesměrování, pokud není uživatel přihlášen
+            return "redirect:/login";
         }
         else model.addAttribute("username", loggedInUser.getUsername());
 
-        // Najdeme košík uživatele (stav PENDING)
+        // Cart = order in PENDING state
         Order cart = orderRepository.findByUserAndStatus(loggedInUser, "PENDING")
                 .orElseGet(() -> {
                     Order newCart = new Order();
                     newCart.setUser(loggedInUser);
                     newCart.setStatus("PENDING");
-                    return orderRepository.save(newCart); // Vytvoříme nový košík
+                    return orderRepository.save(newCart);
                 });
 
         model.addAttribute("cart", cart);
-        return "cart"; // Vrátí šablonu cart.html
+        return "cart";
     }
 
     private void updateTotalPrice(Order order) {
@@ -63,7 +63,6 @@ public class OrderController {
         orderRepository.save(order);
     }
 
-
     @GetMapping("/cart/add/{id}")
     public String addToCart(@PathVariable Long id, HttpSession session) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
@@ -72,7 +71,7 @@ public class OrderController {
         }
 
         Watch watch = watchRepository.findById(id).orElse(null);
-        if (watch == null || watch.getStock() <= 0) { // Kontrola, zda je skladem
+        if (watch == null || watch.getStock() <= 0) {
             return "redirect:/order/cart";
         }
 
@@ -90,7 +89,7 @@ public class OrderController {
 
         if (existingItem.isPresent()) {
             OrderItem item = existingItem.get();
-            if (item.getQuantity() < watch.getStock()) { // Ověření, že nepřekročí sklad
+            if (item.getQuantity() < watch.getStock()) {
                 item.setQuantity(item.getQuantity() + 1);
                 orderItemRepository.save(item);
             }
@@ -105,7 +104,6 @@ public class OrderController {
         return "redirect:/order/cart";
     }
 
-
     @GetMapping("/cart/remove/{id}")
     public String removeFromCart(@PathVariable Long id, HttpSession session) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
@@ -113,7 +111,6 @@ public class OrderController {
             return "redirect:/login";
         }
 
-        // Najdeme košík uživatele
         Order cart = orderRepository.findByUserAndStatus(loggedInUser, "PENDING")
                 .orElse(null);
 
@@ -125,17 +122,16 @@ public class OrderController {
             if (itemToRemove.isPresent()) {
                 OrderItem item = itemToRemove.get();
                 if (item.getQuantity() > 1) {
-                    // Snížení počtu kusů
                     item.setQuantity(item.getQuantity() - 1);
                     orderItemRepository.save(item);
                 } else {
-                    // Odstranění položky, pokud je množství 1
                     orderItemRepository.delete(item);
-                    cart.getItems().remove(item); // Aktualizace kolekce
-                    orderRepository.save(cart); // Uložíme změnu košíku
+                    cart.getItems().remove(item);
+                    orderRepository.save(cart);
                 }
             }
         }
+        assert cart != null;
         updateTotalPrice(cart);
         return "redirect:/order/cart";
     }
@@ -147,7 +143,6 @@ public class OrderController {
             return "redirect:/login";
         }
 
-        // Najdeme košík uživatele
         Order cart = orderRepository.findByUserAndStatus(loggedInUser, "PENDING")
                 .orElse(null);
 
@@ -156,11 +151,12 @@ public class OrderController {
                     .filter(item -> item.getWatch().getId().equals(id))
                     .findFirst()
                     .ifPresent(item -> {
-                        orderItemRepository.delete(item); // Odstraníme položku z databáze
-                        cart.getItems().remove(item);    // Odstraníme položku z kolekce
-                        orderRepository.save(cart);     // Uložíme změnu košíku
+                        orderItemRepository.delete(item);
+                        cart.getItems().remove(item);
+                        orderRepository.save(cart);
                     });
         }
+        assert cart != null;
         updateTotalPrice(cart);
         return "redirect:/order/cart";
     }
@@ -172,22 +168,19 @@ public class OrderController {
             return "redirect:/login";
         }
 
-        // Najdeme košík uživatele (stav PENDING)
         Order cart = orderRepository.findByUserAndStatus(loggedInUser, "PENDING")
                 .orElseGet(() -> {
-                    // Pokud není nalezen, vrátíme null nebo nový objekt
                     Order newCart = new Order();
                     newCart.setUser(loggedInUser);
                     newCart.setStatus("PENDING");
-                    return newCart; // Tento košík není uložen do databáze
+                    return newCart;
                 });
 
         if (cart.getItems() == null || cart.getItems().isEmpty()) {
-            return "redirect:/order/cart"; // Přesměrování, pokud je košík prázdný
+            return "redirect:/order/cart";
         }
-
-        model.addAttribute("order", cart); // Přidání do modelu
-        return "checkout"; // Odkaz na šablonu
+        model.addAttribute("order", cart);
+        return "checkout";
     }
 
 
@@ -209,13 +202,11 @@ public class OrderController {
             return "redirect:/order/cart";
         }
 
-        // Aktualizace údajů objednávky
         cart.setCustomerName(order.getCustomerName());
         cart.setCustomerAddress(order.getCustomerAddress());
         cart.setPaymentMethod(order.getPaymentMethod());
         cart.setStatus("CREATED");
 
-        // Odečtení skladových zásob
         for (OrderItem item : cart.getItems()) {
             Watch watch = item.getWatch();
             int newStock = watch.getStock() - item.getQuantity();
@@ -223,17 +214,17 @@ public class OrderController {
                 throw new IllegalStateException("Nedostatečné zásoby pro produkt: " + watch.getName());
             }
             watch.setStock(newStock);
-            watchRepository.save(watch); // Uložení změny zásob
+            watchRepository.save(watch);
         }
 
+        updateTotalPrice(cart);
         orderRepository.save(cart);
 
-        // Generování faktury
+        // Generate invoice
         try {
             generateInvoiceFile(cart);
         } catch (IOException e) {
             e.printStackTrace();
-            // Můžete přidat logiku pro zobrazení chyby uživateli
         }
 
         return "redirect:/order/orders";
@@ -251,7 +242,7 @@ public class OrderController {
         List<Order> orders = orderRepository.findByUserAndStatusNot(loggedInUser, "PENDING");
         model.addAttribute("orders", orders);
 
-        return "orders"; // Vrací šablonu `orders.html`
+        return "orders";
     }
 
     @GetMapping("/invoice/{id}")
@@ -279,19 +270,18 @@ public class OrderController {
     }
 
     private void generateInvoiceFile(Order order) throws IOException {
-        // Cesta k uložení souborů
+        // path in root
         Path invoiceDir = Paths.get("invoices");
         if (!Files.exists(invoiceDir)) {
             Files.createDirectories(invoiceDir);
         }
 
-        // Název souboru
+        // file name
         Path invoiceFile = invoiceDir.resolve("invoice_" + order.getId() + ".txt");
 
-        // Obsah faktury
         String invoiceContent = generateInvoice(order);
 
-        // Zápis do souboru
+        // file write
         Files.writeString(invoiceFile, invoiceContent);
     }
 
@@ -312,5 +302,4 @@ public class OrderController {
         }
         return sb.toString();
     }
-
 }

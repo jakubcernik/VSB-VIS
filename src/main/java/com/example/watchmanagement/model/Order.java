@@ -18,7 +18,7 @@ public class Order {
     private User user;
 
     @Column(nullable = false)
-    private double totalPrice = 0.00; // Výchozí hodnot
+    private double totalPrice = 0.00;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
@@ -34,7 +34,6 @@ public class Order {
     private Date createdAt = new Date();
 
 
-    // Gettery a settery
     public Long getId() {
         return id;
     }

@@ -66,7 +66,7 @@
         <span th:case="'CREATED'">čeká na schválení</span>
         <span th:case="'COMPLETED'">schváleno</span>
         <span th:case="'CANCELED'">stornováno</span>
-        <span th:case="*">neznámý stav</span> <!-- Pro případ, že by byl stav jiný -->
+        <span th:case="*">neznámý stav</span>
     </span>
                 </td>
 
@@ -90,7 +90,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zavřít"></button>
             </div>
             <div class="modal-body">
-                <pre id="invoiceContent"><!-- Obsah faktury se načte sem --></pre>
+                <pre id="invoiceContent"><!-- Invoice is here --></pre>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zavřít</button>

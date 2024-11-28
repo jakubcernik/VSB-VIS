@@ -22,7 +22,6 @@
     <h1 class="mt-4">Upravit hodinky</h1>
 
     <form th:action="@{/admin/watches/update/{id}(id=${watch.id})}" th:object="${watch}" method="post">
-        <!-- Zobrazení validačních chyb -->
         <div th:if="${#fields.hasErrors()}">
             <div class="alert alert-danger">
                 <ul>

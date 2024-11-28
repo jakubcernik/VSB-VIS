@@ -22,9 +22,9 @@
 <div class="container">
     <h1 class="mt-4">Přidat nové hodinky</h1>
 
-    <!-- Formulář pro přidání hodinek -->
+    <!-- Add watch form -->
     <form th:action="@{/admin/watches}" th:object="${watch}" method="post">
-        <!-- Validace: Zobrazení chyb uvnitř formuláře -->
+
         <div th:if="${#fields.hasErrors()}" class="alert alert-danger">
             <ul>
                 <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
