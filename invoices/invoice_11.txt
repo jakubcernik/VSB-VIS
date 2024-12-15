@@ -1,0 +1,9 @@
+Faktura číslo: 11
+Jméno: Jakub
+Adresa: asfgsg
+Platební metoda: CASH
+Stav: CREATED
+Celková cena: 14580.0
+
+Položky objednávky:
+- Orient Classic Bambino 2nd Generation Version7 Automatic RA-AC0M03S30, ks: 2, cena za kus: 7290

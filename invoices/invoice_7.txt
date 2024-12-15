@@ -1,0 +1,9 @@
+Faktura číslo: 7
+Jméno: Martin Konar
+Adresa: Sirotci 10
+Platební metoda: CASH
+Stav: CREATED
+Celková cena: 59010.0
+
+Položky objednávky:
+- Tissot PRX Automatic T137.407.11.041.00, ks: 3, cena za kus: 19670

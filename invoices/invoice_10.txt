@@ -1,0 +1,9 @@
+Faktura číslo: 10
+Jméno: Jakub
+Adresa: fsggw
+Platební metoda: CASH
+Stav: CREATED
+Celková cena: 13560.0
+
+Položky objednávky:
+- Casio G-Shock Original GW-M5610U-1ER, ks: 4, cena za kus: 3390

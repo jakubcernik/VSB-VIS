@@ -1,0 +1,9 @@
+Faktura číslo: 26
+Jméno: sagdas
+Adresa: asdgas
+Platební metoda: CASH
+Stav: CREATED
+Celková cena: 3790.0
+
+Položky objednávky:
+- Festina Chronograph 16760/1, ks: 1, cena za kus: 3790

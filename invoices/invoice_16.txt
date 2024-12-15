@@ -1,0 +1,10 @@
+Faktura číslo: 16
+Jméno: ewrhwethwe
+Adresa: whtehwtrh
+Platební metoda: CASH
+Stav: CREATED
+Celková cena: 105930.0
+
+Položky objednávky:
+- Tissot PRX Automatic T137.407.11.041.00, ks: 5, cena za kus: 19670
+- Festina Chronograph 16760/1, ks: 2, cena za kus: 3790

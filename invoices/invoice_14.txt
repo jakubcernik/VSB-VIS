@@ -1,0 +1,9 @@
+Faktura číslo: 14
+Jméno: Borec 2
+Adresa: fsdgdfsgs
+Platební metoda: BANK_TRANSFER
+Stav: CREATED
+Celková cena: 98350.0
+
+Položky objednávky:
+- Tissot PRX Automatic T137.407.11.041.00, ks: 5, cena za kus: 19670

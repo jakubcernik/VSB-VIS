@@ -1,0 +1,12 @@
+Faktura číslo: 9
+Jméno: Jakub Černík
+Adresa: U lesa 5
+Platební metoda: CARD
+Stav: CREATED
+Celková cena: 30750.0
+
+Položky objednávky:
+- Tissot PRX Automatic T137.407.11.041.00, ks: 1, cena za kus: 19670
+- Festina Chronograph 16760/1, ks: 1, cena za kus: 3790
+- Orient Classic Bambino 2nd Generation Version7 Automatic RA-AC0M03S30, ks: 1, cena za kus: 7290
+- Casio G-Shock Original GW-M5610U-1ER, ks: 1, cena za kus: 3390
