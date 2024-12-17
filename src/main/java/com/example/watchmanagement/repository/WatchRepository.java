@@ -1,9 +1,47 @@
 package com.example.watchmanagement.repository;
 
 import com.example.watchmanagement.model.Watch;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
-public interface WatchRepository extends JpaRepository<Watch, Long> {
+public class WatchRepository {
+
+    private final JdbcTemplate jdbcTemplate;
+
+    public WatchRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    public List<Watch> findAll() {
+        String sql = "SELECT * FROM watch";
+        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Watch.class));
+    }
+
+    public Optional<Watch> findById(Long id) {
+        String sql = "SELECT * FROM watch WHERE id = ?";
+        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Watch.class), id)
+                .stream()
+                .findFirst();
+    }
+
+    public void save(Watch watch) {
+        String sql = "INSERT INTO watch (name, price, stock) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, watch.getName(), watch.getPrice(), watch.getStock());
+    }
+
+    public void updateStock(Long id, int newStock) {
+        String sql = "UPDATE watch SET stock = ? WHERE id = ?";
+        jdbcTemplate.update(sql, newStock, id);
+    }
+
+    public void deleteById(Long id) {
+        String sql = "DELETE FROM watch WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
 }
+

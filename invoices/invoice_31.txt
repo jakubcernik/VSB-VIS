@@ -1,0 +1,9 @@
+Faktura číslo: 31
+Jméno: asdsa
+Adresa: asdas
+Platební metoda: CASH
+Stav: CREATED
+Celková cena: 98350.0
+
+Položky objednávky:
+- Tissot PRX Automatic T137.407.11.041.00, ks: 5, cena za kus: 19670

@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
 
+import java.util.Optional;
+
 @Controller
 public class UserController {
 
@@ -54,15 +56,23 @@ public class UserController {
                             @RequestParam String password,
                             Model model,
                             HttpSession session) {
-        User user = userRepository.findByUsername(username);
-        if (user != null && user.getPassword().equals(password)) {
-            session.setAttribute("loggedInUser", user);
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+        if (optionalUser.isPresent() && optionalUser.get().getPassword().equals(password)) {
+            User loggedInUser = optionalUser.get();
+            if (loggedInUser.getId() == null) {
+                System.err.println("Login Error: User ID is null for user: " + loggedInUser);
+                throw new IllegalStateException("Logged-in user must have a valid ID.");
+            }
+            session.setAttribute("loggedInUser", loggedInUser);
+            System.out.println("Logged-in user: " + loggedInUser);
             return "redirect:/home";
         } else {
-            model.addAttribute("error", "Neplatné uživatelské jméno nebo heslo.");
+            model.addAttribute("error", "Invalid username or password.");
             return "login";
         }
     }
+
+
 
     @GetMapping("/home")
     public String showHomePage(Model model, HttpSession session) {

@@ -4,9 +4,23 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.io.Serializable;
+
 @Entity
 @Table(name = "users") // "user" je rezervované slovo v SQL
-public class User {
+public class User implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", role='" + role + '\'' +
+                '}';
+    }
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

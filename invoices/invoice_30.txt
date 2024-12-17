@@ -1,0 +1,9 @@
+Faktura číslo: 30
+Jméno: uaifzaiuf
+Adresa: aetgagaw
+Platební metoda: CARD
+Stav: CREATED
+Celková cena: 11370.0
+
+Položky objednávky:
+- Festina Chronograph 16760/1, ks: 3, cena za kus: 3790
