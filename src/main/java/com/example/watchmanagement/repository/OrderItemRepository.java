@@ -19,9 +19,21 @@ public class OrderItemRepository {
     }
 
     public void save(OrderItem orderItem) {
-        String sql = "INSERT INTO order_item (order_id, watch_id, quantity) VALUES (?, ?, ?)";
-        jdbcTemplate.update(sql, orderItem.getOrder().getId(), orderItem.getWatch().getId(), orderItem.getQuantity());
+        if (orderItem.getId() == null) {
+            // Pokud ID je null -> jedná se o nový záznam (INSERT)
+            String sql = "INSERT INTO order_item (order_id, watch_id, quantity) VALUES (?, ?, ?)";
+            jdbcTemplate.update(sql, orderItem.getOrder().getId(), orderItem.getWatch().getId(), orderItem.getQuantity());
+
+            // Získáme poslední vložené ID
+            Long id = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
+            orderItem.setId(id);
+        } else {
+            // Pokud ID existuje -> jedná se o aktualizaci (UPDATE)
+            String sql = "UPDATE order_item SET quantity = ? WHERE id = ?";
+            jdbcTemplate.update(sql, orderItem.getQuantity(), orderItem.getId());
+        }
     }
+
 
     public Optional<OrderItem> findById(Long id) {
         String sql = "SELECT * FROM order_item WHERE id = ?";

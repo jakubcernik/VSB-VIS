@@ -42,14 +42,14 @@ public class OrderRepository {
             item.setId(rs.getLong("id"));
             item.setQuantity(rs.getInt("quantity"));
 
-            // Nastavíme Watch z databáze
+            // Načíst Watch
             Long watchId = rs.getLong("watch_id");
             Watch watch = loadWatch(watchId);
             item.setWatch(watch);
 
-            // Nastavíme zpětně Order
+            // Nastavit Order
             Order order = new Order();
-            order.setId(orderId); // Nastavíme pouze ID objednávky
+            order.setId(orderId);
             item.setOrder(order);
 
             return item;
@@ -77,16 +77,14 @@ public class OrderRepository {
         return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Order.class), id)
                 .stream()
                 .peek(order -> {
-                    List<OrderItem> items = loadOrderItems(order.getId());
-                    order.setItems(items);
+                    Long userId = jdbcTemplate.queryForObject("SELECT user_id FROM orders WHERE id = ?", Long.class, id);
+                    User user = new User();
+                    user.setId(userId);
+                    order.setUser(user);
 
-                    // Přiřadíme uživatele, pokud není null
-                    Long userId = order.getUser() != null ? order.getUser().getId() : null;
-                    if (userId != null) {
-                        User user = new User();
-                        user.setId(userId);
-                        order.setUser(user);
-                    }
+                    // Načítání položek objednávky
+                    List<OrderItem> items = loadOrderItems(id);
+                    order.setItems(items);
                 })
                 .findFirst();
     }

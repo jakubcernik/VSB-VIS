@@ -110,8 +110,10 @@ public class AdminController {
 
         for (OrderItem item : order.getItems()) {
             Watch watch = item.getWatch();
-            watch.setStock(watch.getStock() + item.getQuantity());
-            watchRepository.save(watch);
+            watchRepository.updateStock(watch.getId(), watch.getStock() - item.getQuantity());
+
+            //watch.setStock(watch.getStock() + item.getQuantity());
+            //watchRepository.save(watch);
         }
 
         order.setStatus("CANCELED");

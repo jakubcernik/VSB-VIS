@@ -13,6 +13,15 @@ public class OrderItem {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
+    @Override
+    public String toString() {
+        return "OrderItem{" +
+                "id=" + id +
+                ", order=" + (order != null ? order.getId() : "null") +
+                ", watch=" + (watch != null ? watch.getId() : "null") +
+                ", quantity=" + quantity +
+                '}';
+    }
     @ManyToOne
     @JoinColumn(name = "watch_id", nullable = false)
     private Watch watch;

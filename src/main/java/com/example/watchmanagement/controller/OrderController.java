@@ -63,11 +63,27 @@ public class OrderController {
 
     private void updateTotalPrice(Order order) {
         double total = order.getItems().stream()
-                .mapToDouble(item -> item.getQuantity() * item.getWatch().getPrice())
+                .mapToDouble(item -> {
+                    if (item.getWatch() == null) {
+                        throw new IllegalStateException("Watch in OrderItem is null. OrderItem ID: " + item.getId());
+                    }
+                    if (item.getOrder() == null) {
+                        // Načíst kompletní Order pro každý item, pokud chybí
+                        Order completeOrder = orderRepository.findById(order.getId())
+                                .orElseThrow(() -> new IllegalStateException("Order not found for ID: " + order.getId()));
+                        item.setOrder(completeOrder);
+                    }
+                    return item.getQuantity() * item.getWatch().getPrice();
+                })
                 .sum();
         order.setTotalPrice(total);
+        System.out.println("Total price calculated: " + total);
+
+        // Uložení objednávky
+        System.out.println("Saving order with status: " + order.getStatus());
         orderRepository.save(order);
     }
+
 
     @GetMapping("/cart/add/{id}")
     public String addToCart(@PathVariable Long id, HttpSession session) {
@@ -94,23 +110,24 @@ public class OrderController {
                     return orderRepository.save(newCart);
                 });
 
-        // Najdeme existující položku v košíku
         Optional<OrderItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getWatch().getId().equals(id))
                 .findFirst();
 
         if (existingItem.isPresent()) {
-            // Zvýšíme množství u existující položky
             OrderItem item = existingItem.get();
+            System.out.println("Existing item ID: " + item.getId());
+            System.out.println("Order ID: " + item.getOrder().getId());
             if (item.getQuantity() < watch.getStock()) {
                 item.setQuantity(item.getQuantity() + 1);
-                item.setOrder(cart); // Explicitně nastavíme rodičovskou objednávku
+                item.setOrder(cart); // Explicitně přiřaďte objednávku
                 orderItemRepository.save(item);
                 System.out.println("Updated quantity for product: " + watch.getName() + " to " + item.getQuantity());
             } else {
                 System.err.println("Not enough stock for product: " + watch.getName());
             }
-        } else {
+        }
+        else {
             // Přidáme novou položku do košíku
             OrderItem newItem = new OrderItem();
             newItem.setOrder(cart); // Nastavíme objednávku
@@ -234,6 +251,9 @@ public class OrderController {
 
         Order cart = orderRepository.findById(order.getId())
                 .orElse(null);
+        System.out.println("Order ID: " + cart.getId());
+        System.out.println("Order Status: " + cart.getStatus());
+        System.out.println("Order Items Count: " + (cart.getItems() != null ? cart.getItems().size() : "null"));
 
         if (cart == null || cart.getItems().isEmpty()) {
             return "redirect:/order/cart";
@@ -250,11 +270,16 @@ public class OrderController {
             if (newStock < 0) {
                 throw new IllegalStateException("Nedostatečné zásoby pro produkt: " + watch.getName());
             }
-            watch.setStock(newStock);
-            watchRepository.save(watch);
+            //watch.setStock(newStock);
+            //watchRepository.save(watch);
+            watchRepository.updateStock(watch.getId(), newStock);
+
         }
 
         updateTotalPrice(cart);
+        System.out.println("Order user before saving orderRepository.save(cart) in processCheckout: " + cart.getUser());
+        System.out.println("Order status before saving orderRepository.save(cart) in processCheckout: " + cart.getStatus());
+        System.out.println("Executing UPDATE for Order ID: " + cart.getId());
         orderRepository.save(cart);
 
         // Generate invoice

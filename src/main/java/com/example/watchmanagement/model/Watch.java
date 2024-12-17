@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity
 public class Watch {
@@ -15,7 +16,7 @@ public class Watch {
     @NotBlank(message = "Název je povinný")
     private String name;
 
-    @NotBlank(message = "Popis je povinný")
+    @Size(min = 0, max = 1000, message = "Popis může mít maximálně 1000 znaků")
     @Column(length = 1000)
     private String description;
 

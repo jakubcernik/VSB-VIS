@@ -30,9 +30,26 @@ public class WatchRepository {
     }
 
     public void save(Watch watch) {
-        String sql = "INSERT INTO watch (name, price, stock) VALUES (?, ?, ?)";
-        jdbcTemplate.update(sql, watch.getName(), watch.getPrice(), watch.getStock());
+        if (watch.getDescription() == null) {
+            watch.setDescription(""); // Nastavíme prázdný popis místo null
+        }
+
+        if (watch.getId() == null) {
+            // INSERT nového záznamu
+            String sql = "INSERT INTO watch (name, price, stock, description, image) VALUES (?, ?, ?, ?, ?)";
+            jdbcTemplate.update(sql, watch.getName(), watch.getPrice(), watch.getStock(), watch.getDescription(), watch.getImage());
+
+            // Nastavení posledního ID
+            Long id = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
+            watch.setId(id);
+        } else {
+            // UPDATE existujícího záznamu
+            String sql = "UPDATE watch SET name = ?, price = ?, stock = ?, description = ?, image = ? WHERE id = ?";
+            jdbcTemplate.update(sql, watch.getName(), watch.getPrice(), watch.getStock(), watch.getDescription(), watch.getImage(), watch.getId());
+        }
     }
+
+
 
     public void updateStock(Long id, int newStock) {
         String sql = "UPDATE watch SET stock = ? WHERE id = ?";
