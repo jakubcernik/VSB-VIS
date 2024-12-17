@@ -18,7 +18,6 @@ public class UserController {
     private final UserService userService;
     private final WatchService watchService;
 
-    // Přidáme WatchService do konstruktoru
     public UserController(UserService userService, WatchService watchService) {
         this.userService = userService;
         this.watchService = watchService;
@@ -75,7 +74,6 @@ public class UserController {
             model.addAttribute("role", "USER");
         }
 
-        // Místo watchRepository.findAll() voláme watchService.findAll()
         model.addAttribute("watches", watchService.findAll());
 
         return "home";

@@ -127,6 +127,7 @@ public class OrderController {
                 }
             }
         }
+        assert cart != null;
         orderService.updateTotalPrice(cart);
         return "redirect:/order/cart";
     }
@@ -150,6 +151,7 @@ public class OrderController {
                         orderService.save(cart);
                     });
         }
+        assert cart != null;
         orderService.updateTotalPrice(cart);
         return "redirect:/order/cart";
     }

@@ -24,15 +24,18 @@ public class OrderRepository {
 
     public Optional<Order> findByUserAndStatus(User user, String status) {
         String sql = "SELECT * FROM orders WHERE user_id = ? AND status = ?";
-        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Order.class), user.getId(), status)
-                .stream()
-                .peek(order -> {
-                    // Explicitně načteme položky objednávky
-                    List<OrderItem> items = loadOrderItems(order.getId());
-                    order.setItems(items);
-                    order.setUser(user); // Nastavíme uživatele
-                })
-                .findFirst();
+        List<Order> orders = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Order.class), user.getId(), status);
+
+        if (orders.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Order order = orders.get(0);
+        List<OrderItem> items = loadOrderItems(order.getId());
+        order.setItems(items);
+        order.setUser(user);
+
+        return Optional.of(order);
     }
 
     private List<OrderItem> loadOrderItems(Long orderId) {
@@ -42,12 +45,10 @@ public class OrderRepository {
             item.setId(rs.getLong("id"));
             item.setQuantity(rs.getInt("quantity"));
 
-            // Načíst Watch
             Long watchId = rs.getLong("watch_id");
             Watch watch = loadWatch(watchId);
             item.setWatch(watch);
 
-            // Nastavit Order
             Order order = new Order();
             order.setId(orderId);
             item.setOrder(order);
@@ -65,31 +66,29 @@ public class OrderRepository {
             watch.setName(rs.getString("name"));
             watch.setPrice(rs.getInt("price"));
             watch.setStock(rs.getInt("stock"));
-            // Přidejte další pole podle potřeby
             return watch;
         }, watchId);
     }
 
-
-
     public Optional<Order> findById(Long id) {
         String sql = "SELECT * FROM orders WHERE id = ?";
-        return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Order.class), id)
-                .stream()
-                .peek(order -> {
-                    Long userId = jdbcTemplate.queryForObject("SELECT user_id FROM orders WHERE id = ?", Long.class, id);
-                    User user = new User();
-                    user.setId(userId);
-                    order.setUser(user);
+        List<Order> orders = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Order.class), id);
 
-                    // Načítání položek objednávky
-                    List<OrderItem> items = loadOrderItems(id);
-                    order.setItems(items);
-                })
-                .findFirst();
+        if (orders.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Order order = orders.get(0);
+        Long userId = jdbcTemplate.queryForObject("SELECT user_id FROM orders WHERE id = ?", Long.class, id);
+        User user = new User();
+        user.setId(userId);
+        order.setUser(user);
+
+        List<OrderItem> items = loadOrderItems(id);
+        order.setItems(items);
+
+        return Optional.of(order);
     }
-
-
 
     public Order save(Order order) {
         if (order.getUser() == null || order.getUser().getId() == null) {

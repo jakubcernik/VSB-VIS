@@ -1,0 +1,9 @@
+Faktura číslo: 33
+Jméno: Jirka Kral
+Adresa: Janova
+Platební metoda: BANK_TRANSFER
+Stav: CREATED
+Celková cena: 6780.0
+
+Položky objednávky:
+- Casio G-Shock Original GW-M5610U-1ER, ks: 2, cena za kus: 3390

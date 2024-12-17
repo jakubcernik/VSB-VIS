@@ -17,7 +17,7 @@ public class OrderService {
     }
 
     public Order save(Order order) {
-        return orderRepository.save(order); // Repo vrací Order, takže v pořádku
+        return orderRepository.save(order);
     }
 
     public Optional<Order> findById(Long id) {
@@ -36,7 +36,6 @@ public class OrderService {
         return orderRepository.findByStatus(status);
     }
 
-    // Metoda pro přepočet ceny a uložení objednávky
     public void updateTotalPrice(Order order) {
         double total = order.getItems().stream()
                 .mapToDouble(item -> item.getQuantity() * item.getWatch().getPrice())

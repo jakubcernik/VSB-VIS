@@ -89,7 +89,7 @@ public class AdminController {
 
     @GetMapping("/orders-to-confirm")
     public String showOrdersToConfirm(Model model) {
-        // Všechny objednávky ve stavu CREATED
+        // All orders in CREATED state
         List<Order> orders = orderService.findByStatus("CREATED");
         model.addAttribute("orders", orders);
         return "/admin/orders-to-confirm";
@@ -109,10 +109,8 @@ public class AdminController {
         Order order = orderService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid order ID"));
 
-        // Pro každou položku objednávky snížíme stock
         for (OrderItem item : order.getItems()) {
             Watch watch = item.getWatch();
-            // Použijeme watchService.updateStock místo přímého volání repository
             watchService.updateStock(watch.getId(), watch.getStock() - item.getQuantity());
         }
 
@@ -120,5 +118,4 @@ public class AdminController {
         orderService.save(order);
         return "redirect:/admin/orders-to-confirm";
     }
-
 }

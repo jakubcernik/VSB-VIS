@@ -16,7 +16,7 @@ public class Watch {
     @NotBlank(message = "Název je povinný")
     private String name;
 
-    @Size(min = 0, max = 1000, message = "Popis může mít maximálně 1000 znaků")
+    @Size(max = 1000, message = "Popis může mít maximálně 1000 znaků")
     @Column(length = 1000)
     private String description;
 
@@ -32,13 +32,6 @@ public class Watch {
     private int stock;
 
     public Watch() {}
-
-    public Watch(String name, String description, int price, String image) {
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.image = image;
-    }
 
     public Long getId() {
         return id;

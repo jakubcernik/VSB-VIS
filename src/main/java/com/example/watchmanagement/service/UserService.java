@@ -15,14 +15,9 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Registruje nového uživatele, nastaví mu roli a uloží do DB.
-     */
-    public User registerUser(User user) {
-        // Přesunuto z controlleru
+    public void registerUser(User user) {
         user.setRole("USER");
         userRepository.save(user);
-        return user;
     }
 
     /**
@@ -42,18 +37,5 @@ public class UserService {
         } else {
             return Optional.empty();
         }
-    }
-
-    // Další pomocné metody, pokud bys je potřeboval
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-
-    public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
-    }
-
-    public void deleteById(Long id) {
-        userRepository.deleteById(id);
     }
 }

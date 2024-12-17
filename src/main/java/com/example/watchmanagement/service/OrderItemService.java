@@ -14,7 +14,6 @@ public class OrderItemService {
 
     public OrderItem save(OrderItem item) {
         orderItemRepository.save(item);
-        // Po uložení má item již nastavené ID (pokud to byl nový záznam)
         return item;
     }
 

@@ -31,25 +31,23 @@ public class WatchRepository {
 
     public void save(Watch watch) {
         if (watch.getDescription() == null) {
-            watch.setDescription(""); // Nastavíme prázdný popis místo null
+            watch.setDescription("");
         }
 
         if (watch.getId() == null) {
-            // INSERT nového záznamu
+            // New data
             String sql = "INSERT INTO watch (name, price, stock, description, image) VALUES (?, ?, ?, ?, ?)";
             jdbcTemplate.update(sql, watch.getName(), watch.getPrice(), watch.getStock(), watch.getDescription(), watch.getImage());
 
-            // Nastavení posledního ID
+            // Last ID
             Long id = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
             watch.setId(id);
         } else {
-            // UPDATE existujícího záznamu
+            // UPDATE
             String sql = "UPDATE watch SET name = ?, price = ?, stock = ?, description = ?, image = ? WHERE id = ?";
             jdbcTemplate.update(sql, watch.getName(), watch.getPrice(), watch.getStock(), watch.getDescription(), watch.getImage(), watch.getId());
         }
     }
-
-
 
     public void updateStock(Long id, int newStock) {
         String sql = "UPDATE watch SET stock = ? WHERE id = ?";
@@ -61,4 +59,3 @@ public class WatchRepository {
         jdbcTemplate.update(sql, id);
     }
 }
-
