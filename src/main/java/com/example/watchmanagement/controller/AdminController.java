@@ -4,8 +4,8 @@ import com.example.watchmanagement.model.Order;
 import com.example.watchmanagement.model.OrderItem;
 import com.example.watchmanagement.model.User;
 import com.example.watchmanagement.model.Watch;
-import com.example.watchmanagement.repository.OrderRepository;
-import com.example.watchmanagement.repository.WatchRepository;
+import com.example.watchmanagement.service.OrderService;
+import com.example.watchmanagement.service.WatchService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,12 +16,12 @@ import java.util.List;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
-    private final WatchRepository watchRepository;
-    private final OrderRepository orderRepository;
+    private final WatchService watchService;
+    private final OrderService orderService;
 
-    public AdminController(WatchRepository watchRepository, OrderRepository orderRepository) {
-        this.watchRepository = watchRepository;
-        this.orderRepository = orderRepository;
+    public AdminController(WatchService watchService, OrderService orderService) {
+        this.watchService = watchService;
+        this.orderService = orderService;
     }
 
     @GetMapping("/watches")
@@ -30,7 +30,7 @@ public class AdminController {
         if (loggedInUser == null || !"ADMIN".equals(loggedInUser.getRole())) {
             return "redirect:/login";
         }
-        model.addAttribute("watches", watchRepository.findAll());
+        model.addAttribute("watches", watchService.findAll());
         return "admin/watches";
     }
 
@@ -50,7 +50,7 @@ public class AdminController {
         if (loggedInUser == null || !"ADMIN".equals(loggedInUser.getRole())) {
             return "redirect:/login";
         }
-        watchRepository.save(watch);
+        watchService.save(watch);
         return "redirect:/admin/watches";
     }
 
@@ -60,7 +60,8 @@ public class AdminController {
         if (loggedInUser == null || !"ADMIN".equals(loggedInUser.getRole())) {
             return "redirect:/login";
         }
-        Watch watch = watchRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid watch Id:" + id));
+        Watch watch = watchService.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid watch Id:" + id));
         model.addAttribute("watch", watch);
         return "admin/edit-watch";
     }
@@ -72,7 +73,7 @@ public class AdminController {
             return "redirect:/login";
         }
         watch.setId(id);
-        watchRepository.save(watch);
+        watchService.save(watch);
         return "redirect:/admin/watches";
     }
 
@@ -82,42 +83,41 @@ public class AdminController {
         if (loggedInUser == null || !"ADMIN".equals(loggedInUser.getRole())) {
             return "redirect:/login";
         }
-        watchRepository.deleteById(id);
+        watchService.deleteById(id);
         return "redirect:/admin/watches";
     }
 
     @GetMapping("/orders-to-confirm")
     public String showOrdersToConfirm(Model model) {
-        // All orders in CREATED state
-        List<Order> orders = orderRepository.findByStatus("CREATED");
+        // Všechny objednávky ve stavu CREATED
+        List<Order> orders = orderService.findByStatus("CREATED");
         model.addAttribute("orders", orders);
         return "/admin/orders-to-confirm";
     }
 
     @GetMapping("/orders/approve/{id}")
     public String approveOrder(@PathVariable Long id) {
-        Order order = orderRepository.findById(id)
+        Order order = orderService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid order ID"));
         order.setStatus("COMPLETED");
-        orderRepository.save(order);
+        orderService.save(order);
         return "redirect:/admin/orders-to-confirm";
     }
 
     @GetMapping("/orders/reject/{id}")
     public String rejectOrder(@PathVariable Long id) {
-        Order order = orderRepository.findById(id)
+        Order order = orderService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid order ID"));
 
+        // Pro každou položku objednávky snížíme stock
         for (OrderItem item : order.getItems()) {
             Watch watch = item.getWatch();
-            watchRepository.updateStock(watch.getId(), watch.getStock() - item.getQuantity());
-
-            //watch.setStock(watch.getStock() + item.getQuantity());
-            //watchRepository.save(watch);
+            // Použijeme watchService.updateStock místo přímého volání repository
+            watchService.updateStock(watch.getId(), watch.getStock() - item.getQuantity());
         }
 
         order.setStatus("CANCELED");
-        orderRepository.save(order);
+        orderService.save(order);
         return "redirect:/admin/orders-to-confirm";
     }
 

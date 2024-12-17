@@ -1,0 +1,9 @@
+Faktura číslo: 34
+Jméno: Standa frajer
+Adresa: U plynárny 23
+Platební metoda: BANK_TRANSFER
+Stav: CREATED
+Celková cena: 39340.0
+
+Položky objednávky:
+- Tissot PRX Automatic T137.407.11.041.00, ks: 2, cena za kus: 19670

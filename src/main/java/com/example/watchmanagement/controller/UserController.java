@@ -1,8 +1,8 @@
 package com.example.watchmanagement.controller;
 
 import com.example.watchmanagement.model.User;
-import com.example.watchmanagement.repository.UserRepository;
-import com.example.watchmanagement.repository.WatchRepository;
+import com.example.watchmanagement.service.UserService;
+import com.example.watchmanagement.service.WatchService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -15,12 +15,13 @@ import java.util.Optional;
 @Controller
 public class UserController {
 
-    private final UserRepository userRepository;
-    private final WatchRepository watchRepository;
+    private final UserService userService;
+    private final WatchService watchService;
 
-    public UserController(UserRepository userRepository, WatchRepository watchRepository) {
-        this.userRepository = userRepository;
-        this.watchRepository = watchRepository;
+    // Přidáme WatchService do konstruktoru
+    public UserController(UserService userService, WatchService watchService) {
+        this.userService = userService;
+        this.watchService = watchService;
     }
 
     @GetMapping("/register")
@@ -31,20 +32,15 @@ public class UserController {
         return "register";
     }
 
-
     @PostMapping("/register")
     public String registerUser(@ModelAttribute @Valid User user, BindingResult result) {
         if (result.hasErrors()) {
             System.out.println("Validační chyby: " + result.getAllErrors());
             return "register";
         }
-
-        System.out.println("Uživatel je: " + user);
-        user.setRole("USER");
-        userRepository.save(user);
+        userService.registerUser(user);
         return "redirect:/login";
     }
-
 
     @GetMapping("/login")
     public String showLoginForm() {
@@ -56,23 +52,17 @@ public class UserController {
                             @RequestParam String password,
                             Model model,
                             HttpSession session) {
-        Optional<User> optionalUser = userRepository.findByUsername(username);
-        if (optionalUser.isPresent() && optionalUser.get().getPassword().equals(password)) {
+        Optional<User> optionalUser = userService.loginUser(username, password);
+
+        if (optionalUser.isPresent()) {
             User loggedInUser = optionalUser.get();
-            if (loggedInUser.getId() == null) {
-                System.err.println("Login Error: User ID is null for user: " + loggedInUser);
-                throw new IllegalStateException("Logged-in user must have a valid ID.");
-            }
             session.setAttribute("loggedInUser", loggedInUser);
-            System.out.println("Logged-in user: " + loggedInUser);
             return "redirect:/home";
         } else {
             model.addAttribute("error", "Invalid username or password.");
             return "login";
         }
     }
-
-
 
     @GetMapping("/home")
     public String showHomePage(Model model, HttpSession session) {
@@ -84,7 +74,10 @@ public class UserController {
             model.addAttribute("username", "guest");
             model.addAttribute("role", "USER");
         }
-        model.addAttribute("watches", watchRepository.findAll());
+
+        // Místo watchRepository.findAll() voláme watchService.findAll()
+        model.addAttribute("watches", watchService.findAll());
+
         return "home";
     }
 

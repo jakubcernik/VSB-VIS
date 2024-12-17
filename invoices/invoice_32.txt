@@ -1,0 +1,10 @@
+Faktura číslo: 32
+Jméno: qqq
+Adresa: qqq
+Platební metoda: CASH
+Stav: CREATED
+Celková cena: 10970.0
+
+Položky objednávky:
+- Festina Chronograph 16760/1, ks: 2, cena za kus: 3790
+- Casio G-Shock Original GW-M5610U-1ER, ks: 1, cena za kus: 3390

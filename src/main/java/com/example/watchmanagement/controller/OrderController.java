@@ -4,9 +4,9 @@ import com.example.watchmanagement.model.Order;
 import com.example.watchmanagement.model.OrderItem;
 import com.example.watchmanagement.model.User;
 import com.example.watchmanagement.model.Watch;
-import com.example.watchmanagement.repository.OrderRepository;
-import com.example.watchmanagement.repository.OrderItemRepository;
-import com.example.watchmanagement.repository.WatchRepository;
+import com.example.watchmanagement.service.OrderService;
+import com.example.watchmanagement.service.OrderItemService;
+import com.example.watchmanagement.service.WatchService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -24,90 +24,55 @@ import java.util.Optional;
 @RequestMapping("/order")
 public class OrderController {
 
-    private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
-    private final WatchRepository watchRepository;
+    private final OrderService orderService;
+    private final OrderItemService orderItemService;
+    private final WatchService watchService;
 
-    public OrderController(OrderRepository orderRepository, OrderItemRepository orderItemRepository, WatchRepository watchRepository) {
-        this.orderRepository = orderRepository;
-        this.orderItemRepository = orderItemRepository;
-        this.watchRepository = watchRepository;
+    public OrderController(OrderService orderService, OrderItemService orderItemService, WatchService watchService) {
+        this.orderService = orderService;
+        this.orderItemService = orderItemService;
+        this.watchService = watchService;
     }
 
     @GetMapping("/cart")
     public String showCart(Model model, HttpSession session) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser == null) {
-            System.err.println("User is not logged in. Redirecting to login.");
             return "redirect:/login";
+        } else {
+            model.addAttribute("username", loggedInUser.getUsername());
         }
-        else model.addAttribute("username", loggedInUser.getUsername());
 
-        // Cart = order in PENDING state
-        Order cart = orderRepository.findByUserAndStatus(loggedInUser, "PENDING")
+        Order cart = orderService.findByUserAndStatus(loggedInUser, "PENDING")
                 .orElseGet(() -> {
-                    if (loggedInUser == null || loggedInUser.getId() == null) {
-                        System.err.println("Error: Logged-in user is null or has no ID.");
-                        throw new IllegalStateException("Cannot create an order without a valid user.");
-                    }
-                    System.out.println("Creating a new order for user: " + loggedInUser);
                     Order newCart = new Order();
-                    newCart.setUser(loggedInUser); // Zde zajistíme, že uživatel je přiřazen
+                    newCart.setUser(loggedInUser);
                     newCart.setStatus("PENDING");
-                    return orderRepository.save(newCart);
+                    return orderService.save(newCart);
                 });
 
         model.addAttribute("cart", cart);
         return "cart";
     }
 
-    private void updateTotalPrice(Order order) {
-        double total = order.getItems().stream()
-                .mapToDouble(item -> {
-                    if (item.getWatch() == null) {
-                        throw new IllegalStateException("Watch in OrderItem is null. OrderItem ID: " + item.getId());
-                    }
-                    if (item.getOrder() == null) {
-                        // Načíst kompletní Order pro každý item, pokud chybí
-                        Order completeOrder = orderRepository.findById(order.getId())
-                                .orElseThrow(() -> new IllegalStateException("Order not found for ID: " + order.getId()));
-                        item.setOrder(completeOrder);
-                    }
-                    return item.getQuantity() * item.getWatch().getPrice();
-                })
-                .sum();
-        order.setTotalPrice(total);
-        System.out.println("Total price calculated: " + total);
-
-        // Uložení objednávky
-        System.out.println("Saving order with status: " + order.getStatus());
-        orderRepository.save(order);
-    }
-
-
     @GetMapping("/cart/add/{id}")
     public String addToCart(@PathVariable Long id, HttpSession session) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser == null) {
-            System.err.println("User is not logged in. Redirecting to login.");
             return "redirect:/login";
         }
-        System.out.println("Logged in user: " + loggedInUser.getUsername());
 
-        // Najdeme produkt (Watch) podle ID
-        Watch watch = watchRepository.findById(id).orElse(null);
+        Watch watch = watchService.findById(id).orElse(null);
         if (watch == null || watch.getStock() <= 0) {
-            System.err.println("Product not found or out of stock.");
             return "redirect:/order/cart";
         }
 
-        // Najdeme nebo vytvoříme objednávku (Order) ve stavu PENDING
-        Order cart = orderRepository.findByUserAndStatus(loggedInUser, "PENDING")
+        Order cart = orderService.findByUserAndStatus(loggedInUser, "PENDING")
                 .orElseGet(() -> {
                     Order newCart = new Order();
                     newCart.setUser(loggedInUser);
                     newCart.setStatus("PENDING");
-                    return orderRepository.save(newCart);
+                    return orderService.save(newCart);
                 });
 
         Optional<OrderItem> existingItem = cart.getItems().stream()
@@ -116,46 +81,33 @@ public class OrderController {
 
         if (existingItem.isPresent()) {
             OrderItem item = existingItem.get();
-            System.out.println("Existing item ID: " + item.getId());
-            System.out.println("Order ID: " + item.getOrder().getId());
             if (item.getQuantity() < watch.getStock()) {
                 item.setQuantity(item.getQuantity() + 1);
-                item.setOrder(cart); // Explicitně přiřaďte objednávku
-                orderItemRepository.save(item);
-                System.out.println("Updated quantity for product: " + watch.getName() + " to " + item.getQuantity());
+                item.setOrder(cart);
+                orderItemService.save(item);
             } else {
                 System.err.println("Not enough stock for product: " + watch.getName());
             }
-        }
-        else {
-            // Přidáme novou položku do košíku
+        } else {
             OrderItem newItem = new OrderItem();
-            newItem.setOrder(cart); // Nastavíme objednávku
+            newItem.setOrder(cart);
             newItem.setWatch(watch);
             newItem.setQuantity(1);
-            orderItemRepository.save(newItem);
-            System.out.println("Added new product to cart: " + watch.getName());
+            orderItemService.save(newItem);
         }
 
-
-        // Aktualizace celkové ceny
-        updateTotalPrice(cart);
+        orderService.updateTotalPrice(cart);
         return "redirect:/order/cart";
     }
-
 
     @GetMapping("/cart/remove/{id}")
     public String removeFromCart(@PathVariable Long id, HttpSession session) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser == null) {
-            System.err.println("User is not logged in. Redirecting to login.");
             return "redirect:/login";
         }
-        System.out.println("Logged in user: " + loggedInUser.getUsername());
 
-
-        Order cart = orderRepository.findByUserAndStatus(loggedInUser, "PENDING")
-                .orElse(null);
+        Order cart = orderService.findByUserAndStatus(loggedInUser, "PENDING").orElse(null);
 
         if (cart != null) {
             Optional<OrderItem> itemToRemove = cart.getItems().stream()
@@ -166,18 +118,16 @@ public class OrderController {
                 OrderItem item = itemToRemove.get();
                 if (item.getQuantity() > 1) {
                     item.setQuantity(item.getQuantity() - 1);
-                    item.setOrder(cart); // Ujistíme se, že je objednávka nastavena
-                    orderItemRepository.save(item);
+                    item.setOrder(cart);
+                    orderItemService.save(item);
                 } else {
-                    orderItemRepository.delete(item);
+                    orderItemService.delete(item);
                     cart.getItems().remove(item);
-                    orderRepository.save(cart);
+                    orderService.save(cart);
                 }
             }
-
         }
-        assert cart != null;
-        updateTotalPrice(cart);
+        orderService.updateTotalPrice(cart);
         return "redirect:/order/cart";
     }
 
@@ -185,27 +135,22 @@ public class OrderController {
     public String deleteFromCart(@PathVariable Long id, HttpSession session) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser == null) {
-            System.err.println("User is not logged in. Redirecting to login.");
             return "redirect:/login";
         }
-        System.out.println("Logged in user: " + loggedInUser.getUsername());
 
-
-        Order cart = orderRepository.findByUserAndStatus(loggedInUser, "PENDING")
-                .orElse(null);
+        Order cart = orderService.findByUserAndStatus(loggedInUser, "PENDING").orElse(null);
 
         if (cart != null) {
             cart.getItems().stream()
                     .filter(item -> item.getWatch().getId().equals(id))
                     .findFirst()
                     .ifPresent(item -> {
-                        orderItemRepository.delete(item);
+                        orderItemService.delete(item);
                         cart.getItems().remove(item);
-                        orderRepository.save(cart);
+                        orderService.save(cart);
                     });
         }
-        assert cart != null;
-        updateTotalPrice(cart);
+        orderService.updateTotalPrice(cart);
         return "redirect:/order/cart";
     }
 
@@ -213,13 +158,10 @@ public class OrderController {
     public String showCheckoutForm(Model model, HttpSession session) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser == null) {
-            System.err.println("User is not logged in. Redirecting to login.");
             return "redirect:/login";
         }
-        System.out.println("Logged in user: " + loggedInUser.getUsername());
 
-
-        Order cart = orderRepository.findByUserAndStatus(loggedInUser, "PENDING")
+        Order cart = orderService.findByUserAndStatus(loggedInUser, "PENDING")
                 .orElseGet(() -> {
                     Order newCart = new Order();
                     newCart.setUser(loggedInUser);
@@ -234,27 +176,18 @@ public class OrderController {
         return "checkout";
     }
 
-
     @PostMapping("/cart/checkout")
     public String processCheckout(@ModelAttribute("order") Order order, HttpSession session) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser == null) {
-            System.err.println("User is not logged in. Redirecting to login.");
             return "redirect:/login";
         }
-        System.out.println("Logged in user: " + loggedInUser.getUsername());
-
 
         if (order.getId() == null) {
             throw new IllegalArgumentException("Order ID cannot be null");
         }
 
-        Order cart = orderRepository.findById(order.getId())
-                .orElse(null);
-        System.out.println("Order ID: " + cart.getId());
-        System.out.println("Order Status: " + cart.getStatus());
-        System.out.println("Order Items Count: " + (cart.getItems() != null ? cart.getItems().size() : "null"));
-
+        Order cart = orderService.findById(order.getId()).orElse(null);
         if (cart == null || cart.getItems().isEmpty()) {
             return "redirect:/order/cart";
         }
@@ -270,19 +203,12 @@ public class OrderController {
             if (newStock < 0) {
                 throw new IllegalStateException("Nedostatečné zásoby pro produkt: " + watch.getName());
             }
-            //watch.setStock(newStock);
-            //watchRepository.save(watch);
-            watchRepository.updateStock(watch.getId(), newStock);
-
+            watchService.updateStock(watch.getId(), newStock);
         }
 
-        updateTotalPrice(cart);
-        System.out.println("Order user before saving orderRepository.save(cart) in processCheckout: " + cart.getUser());
-        System.out.println("Order status before saving orderRepository.save(cart) in processCheckout: " + cart.getStatus());
-        System.out.println("Executing UPDATE for Order ID: " + cart.getId());
-        orderRepository.save(cart);
+        orderService.updateTotalPrice(cart);
+        orderService.save(cart);
 
-        // Generate invoice
         try {
             generateInvoiceFile(cart);
         } catch (IOException e) {
@@ -292,21 +218,16 @@ public class OrderController {
         return "redirect:/order/orders";
     }
 
-
     @GetMapping("/orders")
     public String showOrders(Model model, HttpSession session) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser == null) {
-            System.err.println("User is not logged in. Redirecting to login.");
             return "redirect:/login";
-        }
-        else{
-            System.out.println("Logged in user: " + loggedInUser.getUsername());
+        } else {
             model.addAttribute("username", loggedInUser.getUsername());
         }
 
-
-        List<Order> orders = orderRepository.findByUserAndStatusNot(loggedInUser, "PENDING");
+        List<Order> orders = orderService.findByUserAndStatusNot(loggedInUser, "PENDING");
         model.addAttribute("orders", orders);
 
         return "orders";
@@ -315,7 +236,7 @@ public class OrderController {
     @GetMapping("/invoice/{id}")
     @ResponseBody
     public String getInvoice(@PathVariable Long id) {
-        Order order = orderRepository.findById(id)
+        Order order = orderService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid order ID"));
 
         StringBuilder invoiceContent = new StringBuilder();
@@ -337,18 +258,15 @@ public class OrderController {
     }
 
     private void generateInvoiceFile(Order order) throws IOException {
-        // path in root
         Path invoiceDir = Paths.get("invoices");
         if (!Files.exists(invoiceDir)) {
             Files.createDirectories(invoiceDir);
         }
 
-        // file name
         Path invoiceFile = invoiceDir.resolve("invoice_" + order.getId() + ".txt");
 
         String invoiceContent = generateInvoice(order);
 
-        // file write
         Files.writeString(invoiceFile, invoiceContent);
     }
 
